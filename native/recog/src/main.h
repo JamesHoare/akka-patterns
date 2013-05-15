@@ -10,7 +10,6 @@ namespace eigengo { namespace akka {
 	
 	class Main : public RabbitRpcServer {
 	private:
-		Preflight preflight;
 		Recogniser recogniser;
 	protected:
 		virtual std::string handleMessage(const AmqpClient::BasicMessage::ptr_t message, const AmqpClient::Channel::ptr_t channel);

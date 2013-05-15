@@ -48,7 +48,8 @@ object PatternsBuild extends Build {
       "Spray Releases" at "http://repo.spray.io",
       Resolver.typesafeRepo("snapshots"),
       Resolver.sonatypeRepo("snapshots"),
-	  "Jasper Community" at "http://jasperreports.sourceforge.net/maven2"
+      "Video Gorillas" at "http://videogorillas.com/m2/public",
+	    "Jasper Community" at "http://jasperreports.sourceforge.net/maven2"
 	  // resolvers += "neo4j repo" at "http://m2.neo4j.org/content/repositories/releases/"  
     ),
     parallelExecution in Test := false
@@ -92,6 +93,7 @@ object PatternsBuild extends Build {
 
   lazy val api = module("api") dependsOn(core, test % "test") settings(
     libraryDependencies += spray_routing,
+    libraryDependencies += jcodec,
     libraryDependencies += spray_testkit % "test"
     )
 
@@ -123,7 +125,7 @@ object Dependencies {
   val spray_version = "1.1-M7"
 
   val java_logging = "com.github.fommil" % "java-logging" % "1.0"
-  val scalad = "org.eigengo" %% "scalad" % "1.3.0-EG" // https://github.com/janm399/scalad/issues/7
+  val scalad = "org.eigengo" %% "scalad" % "1.3.1" // https://github.com/janm399/scalad/issues/7
   val akka = "com.typesafe.akka" %% "akka-actor" % akka_version
   val akka_contrib = "com.typesafe.akka" %% "akka-contrib" % akka_version intransitive()// JUL only
   val akka_testkit = "com.typesafe.akka" %% "akka-testkit" % akka_version
@@ -146,4 +148,5 @@ object Dependencies {
   val mail = "javax.mail" % "mail" % "1.4.2"
   val scala_io_core = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2"
   val scala_io_file = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
+  val jcodec = "org.jcodec" % "jcodec" % "0.1.3"
 }

@@ -10,15 +10,16 @@ find_package(Rabbitmqc REQUIRED)
 find_package(SimpleAmqpClient REQUIRED)
 find_package(OpenCV REQUIRED)
 
+include_directories(${recog_SOURCE_DIR}/src)
 include_directories(SYSTEM ${Rabbitmqc_INCLUDE_DIRS})
 include_directories(SYSTEM ${SimpleAmqpClient_INCLUDE_DIRS})
 include_directories(..)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-add_executable(recog main.cpp preflight.cpp recog.cpp ../rabbit.cpp ../jzon.cpp ../im.cpp)
-target_link_libraries(recog ${Rabbitmqc_LIBRARY} ${Boost_LIBRARIES} ${SimpleAmqpClient_LIBRARY} ${OpenCV_LIBS})
+add_subdirectory(src)
 
+########## GTest ##########
 set(GTEST_ROOT "${PROJECT_SOURCE_DIR}/../gtest-1.6.0")
 add_subdirectory("${PROJECT_SOURCE_DIR}/../gtest-1.6.0" "${CMAKE_CURRENT_BINARY_DIR}/gtest")
 add_subdirectory(test)

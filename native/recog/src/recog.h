@@ -5,8 +5,8 @@
 namespace eigengo { namespace akka {
 	
 	enum Feature {
-		Circle,
-		Square,
+		//Circle,
+		//Square,
 		Face
 	};
 
@@ -20,7 +20,7 @@ namespace eigengo { namespace akka {
 		
 		bool recognise(const cv::Mat &image, const Feature feature);
 	};
-  
+	  
 } }
 
 #endif
