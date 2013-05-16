@@ -45,13 +45,10 @@ trait Api extends RouteConcatenation {
 
   implicit val executionContext = actorSystem.dispatcher
 
-  val routes =
-    new RecogService(recogCoordinator, actorSystem.settings.config.getString("server.web-server")).route
-
-  def rejectionHandler: PartialFunction[scala.List[Rejection], HttpResponse] = {
-    case (rejections: List[Rejection]) => HttpResponse(StatusCodes.BadRequest)
-  }
+  val origin = actorSystem.settings.config.getString("server.web-server")
+  val routes = new RecogService(recogCoordinator, origin).route
 
   val rootService = actorSystem.actorOf(Props(new RoutedHttpService(routes)))
+  val streamingRecogService = actorSystem.actorOf(Props(new StreamingRecogService(recogCoordinator, origin)))
 
 }

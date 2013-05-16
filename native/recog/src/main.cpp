@@ -15,10 +15,16 @@ std::string Main::handleMessage(const AmqpClient::BasicMessage::ptr_t message, c
 	auto imageData = imageMessage.headImage();
 	auto imageMat = cv::imdecode(cv::Mat(imageData), 1);
 	// ponies & unicorns
-	bool recognised = recogniser.recognise(imageMat, Face);
+	auto coins = coinCounter.count(imageMat);
 	
-	Jzon::Object root;
-	root.Add("accepted", recognised);
+	Jzon::Array root;
+	for (auto i = coins.begin(); i != coins.end(); ++i) {
+		auto coin = *i;
+		Jzon::Object coinJson;
+		coinJson.Add("center", coin.center);
+		coinJson.Add("radius", coin.radius);
+		root.Add("accepted", recognised);
+	}
 	Jzon::Writer writer(root, Jzon::NoFormat);
 	writer.Write();
 

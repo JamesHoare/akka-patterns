@@ -49,6 +49,10 @@ std::vector<Coin> CoinCounter::countCpu(const cv::Mat &image) {
 }
 
 std::vector<Coin> CoinCounter::countGpu(const cv::Mat &image) {
+	// K D D D D D D D D D      ... K
+	
+	// 10 fps ~> 50 kB/s
+	
 	throw "Not here yet";
 }
 

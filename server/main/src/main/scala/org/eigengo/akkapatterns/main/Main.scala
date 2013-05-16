@@ -7,10 +7,16 @@ import org.eigengo.akkapatterns.web.Web
 import org.eigengo.akkapatterns.api.Api
 import akka.util.Timeout
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
+import org.jcodec.api.FrameGrab
+import java.io.File
+import javax.imageio.ImageIO
 
 object Main {
 
   def main(args: Array[String]) {
+//    val f = FrameGrab.getFrame(new File("/Users/janmachacek/Desktop/x.mov"), 0)
+//    ImageIO.write(f, "png", new File("/Users/janmachacek/Tmp/x.png"))
+//
     implicit val system = ActorSystem("AkkaPatterns",
       ConfigFactory.load("application", ConfigParseOptions.defaults().setAllowMissing(false), ConfigResolveOptions.defaults()))
 

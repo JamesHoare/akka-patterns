@@ -10,6 +10,7 @@ trait Web extends SprayCanHttpServerApp {
 
   override lazy val system = actorSystem
 
-  newHttpServer(rootService, name = "spray-http-server") ! Bind("0.0.0.0", 8080)
+  newHttpServer(rootService, name = "rr") ! Bind("0.0.0.0", 8080)
+  newHttpServer(streamingRecogService, name = "s") ! Bind("0.0.0.0", 8088)
 
 }
