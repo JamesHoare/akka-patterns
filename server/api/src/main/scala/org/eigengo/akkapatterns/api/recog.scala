@@ -69,8 +69,8 @@ trait ByteBufferOperations {
 
 class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with ByteBufferOperations {
   final val OneMeg = 1024 * 1024         // 1 MiB
-  final val FrameBlocks = 25 * 1024      // 50 kiB
-  final val HeaderBlock = 16384 + 65535
+  final val FrameBlocks = 10 * 1024      // 50 kiB
+  final val HeaderBlock = 8192
 
   val frameBuffer  = ByteBuffer.allocate(OneMeg)
   val headerBuffer = ByteBuffer.allocate(HeaderBlock)
@@ -93,20 +93,15 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
           video ++= headerBuffer
           video ++= frameBuffer
 
-          video.underlying.position(0)
-          val fos = new FileOutputStream("/Users/janmachacek/x.mov")
-          fos.write(video.underlying.array())
-          fos.close()
-
           counter = counter + 1
           video.underlying.position(0)
           val g = new FrameGrab(new ByteBufferSeekableByteChannel(video.underlying))
           val frame = g.getFrame
           val outputfile = new File(s"/Users/janmachacek/Tmp/saved$counter.png")
           ImageIO.write(frame, "png", outputfile)
-          frameBuffer.reset()
+          frameBuffer.position(0)
         } catch {
-          case t: Throwable => t.printStackTrace()
+          case t: Throwable => // noop
         }
       }
 
