@@ -10,7 +10,7 @@ import concurrent.ExecutionContext
 import org.jcodec.api.FrameGrab
 import org.jcodec.common.ByteBufferSeekableByteChannel
 import java.nio.ByteBuffer
-import java.io.File
+import java.io.{FileOutputStream, File}
 import javax.imageio.ImageIO
 import org.eigengo.akkapatterns.core.recog.RecogSessionRejected
 import org.eigengo.akkapatterns.core.recog.RecogSessionCompleted
@@ -53,25 +53,61 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
 
 }
 
-class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor {
-  val buffer = new ByteBufferSeekableByteChannel(ByteBuffer.allocateDirect(1024 * 1024 * 20))
+trait ByteBufferOperations {
+
+  implicit class RichByteBuffer(val underlying: ByteBuffer) {
+    def ++=(that: ByteBuffer) {
+      val pos = that.position()
+      that.position(0)
+      underlying.put(that)
+      that.position(pos)
+    }
+
+  }
+
+}
+
+class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with ByteBufferOperations {
+  final val OneMeg = 1024 * 1024         // 1 MiB
+  final val FrameBlocks = 25 * 1024      // 50 kiB
+  final val HeaderBlock = 16384 + 65535
+
+  val frameBuffer  = ByteBuffer.allocate(OneMeg)
+  val headerBuffer = ByteBuffer.allocate(HeaderBlock)
+  var at = 0
   var counter = 0
 
   def receive = {
     case ChunkedRequestStart(HttpRequest(HttpMethods.POST, "/recog/stream", _, entity, _)) =>
       println("start")
     case MessageChunk(body, extensions) =>
-      buffer.write(ByteBuffer.wrap(body))
+      if (headerBuffer.hasRemaining) {
+        val count = Math.min(body.length, headerBuffer.remaining())
+        headerBuffer.put(body, 0, count)
+        if (count < body.length) frameBuffer.put(body, count, body.length - count)
+      } else if (frameBuffer.hasRemaining) frameBuffer.put(body, 0, Math.min(body.length, frameBuffer.remaining()))
 
-      val at = buffer.position()
-      try {
-        counter = counter + 1
-        val g = new FrameGrab(buffer)
-        val frame = g.getFrame
-        val outputfile = new File(s"/Users/janmachacek/Tmp/saved$counter.png")
-        ImageIO.write(frame, "png", outputfile)
-      } catch {
-        case t: Throwable => buffer.position(at); print("x" + buffer.position())
+      if (frameBuffer.position() > FrameBlocks) {
+        try {
+          val video: RichByteBuffer = ByteBuffer.allocate(OneMeg + HeaderBlock)
+          video ++= headerBuffer
+          video ++= frameBuffer
+
+          video.underlying.position(0)
+          val fos = new FileOutputStream("/Users/janmachacek/x.mov")
+          fos.write(video.underlying.array())
+          fos.close()
+
+          counter = counter + 1
+          video.underlying.position(0)
+          val g = new FrameGrab(new ByteBufferSeekableByteChannel(video.underlying))
+          val frame = g.getFrame
+          val outputfile = new File(s"/Users/janmachacek/Tmp/saved$counter.png")
+          ImageIO.write(frame, "png", outputfile)
+          frameBuffer.reset()
+        } catch {
+          case t: Throwable => t.printStackTrace()
+        }
       }
 
       print(".")
