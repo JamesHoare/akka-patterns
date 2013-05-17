@@ -7,11 +7,8 @@ import org.eigengo.akkapatterns.core.recog._
 import org.apache.commons.codec.binary.Base64
 import spray.http._
 import concurrent.ExecutionContext
-import org.jcodec.api.FrameGrab
-import org.jcodec.common.ByteBufferSeekableByteChannel
 import java.nio.ByteBuffer
-import java.io.{FileOutputStream, File}
-import javax.imageio.ImageIO
+import java.io.FileOutputStream
 import org.eigengo.akkapatterns.core.recog.RecogSessionRejected
 import org.eigengo.akkapatterns.core.recog.RecogSessionCompleted
 import org.eigengo.akkapatterns.core.recog.RecogSessionAccepted
@@ -68,45 +65,50 @@ trait ByteBufferOperations {
 }
 
 class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with ByteBufferOperations {
-  final val OneMeg = 1024 * 1024         // 1 MiB
-  final val FrameBlocks = 10 * 1024      // 50 kiB
-  final val HeaderBlock = 8192
-
-  val frameBuffer  = ByteBuffer.allocate(OneMeg)
-  val headerBuffer = ByteBuffer.allocate(HeaderBlock)
-  var at = 0
-  var counter = 0
+  var os: FileOutputStream = _
+//  final val OneMeg = 1024 * 1024         // 1 MiB
+//  final val FrameBlocks = 10 * 1024      // 50 kiB
+//  final val HeaderBlock = 8192
+//
+//
+//
+//  val frameBuffer  = ByteBuffer.allocate(OneMeg)
+//  val headerBuffer = ByteBuffer.allocate(HeaderBlock)
+//  var at = 0
+//  var counter = 0
 
   def receive = {
     case ChunkedRequestStart(HttpRequest(HttpMethods.POST, "/recog/stream", _, entity, _)) =>
       println("start")
+      os = new FileOutputStream("/Users/janmachacek/foo.mov")
     case MessageChunk(body, extensions) =>
-      if (headerBuffer.hasRemaining) {
-        val count = Math.min(body.length, headerBuffer.remaining())
-        headerBuffer.put(body, 0, count)
-        if (count < body.length) frameBuffer.put(body, count, body.length - count)
-      } else if (frameBuffer.hasRemaining) frameBuffer.put(body, 0, Math.min(body.length, frameBuffer.remaining()))
-
-      if (frameBuffer.position() > FrameBlocks) {
-        try {
-          val video: RichByteBuffer = ByteBuffer.allocate(OneMeg + HeaderBlock)
-          video ++= headerBuffer
-          video ++= frameBuffer
-
-          counter = counter + 1
-          video.underlying.position(0)
-          val g = new FrameGrab(new ByteBufferSeekableByteChannel(video.underlying))
-          val frame = g.getFrame
-          val outputfile = new File(s"/Users/janmachacek/Tmp/saved$counter.png")
-          ImageIO.write(frame, "png", outputfile)
-          frameBuffer.position(0)
-        } catch {
-          case t: Throwable => // noop
-        }
-      }
-
       print(".")
+      os.write(body)
+//      if (headerBuffer.hasRemaining) {
+//        val count = Math.min(body.length, headerBuffer.remaining())
+//        headerBuffer.put(body, 0, count)
+//        if (count < body.length) frameBuffer.put(body, count, body.length - count)
+//      } else if (frameBuffer.hasRemaining) frameBuffer.put(body, 0, Math.min(body.length, frameBuffer.remaining()))
+//
+//      if (frameBuffer.position() > FrameBlocks) {
+//        try {
+//          val video: RichByteBuffer = ByteBuffer.allocate(OneMeg + HeaderBlock)
+//          video ++= headerBuffer
+//          video ++= frameBuffer
+//
+//          counter = counter + 1
+//          video.underlying.position(0)
+//          val g = new FrameGrab(new ByteBufferSeekableByteChannel(video.underlying))
+//          val frame = g.getFrame
+//          val outputfile = new File(s"/Users/janmachacek/Tmp/saved$counter.png")
+//          ImageIO.write(frame, "png", outputfile)
+//          frameBuffer.position(0)
+//        } catch {
+//          case t: Throwable => // noop
+//        }
+//      }
     case ChunkedMessageEnd(extensions, trailer) =>
+      os.close()
       println("end")
       sender ! HttpResponse(entity = "!! end")
   }
