@@ -2,7 +2,7 @@
 #include <AVFoundation/AVFoundation.h>
 #include "i264Encoder.h"
 
-@interface ViewController : UIViewController {
+@interface ViewController : UIViewController<AVCaptureVideoDataOutputSampleBufferDelegate, NSURLConnectionDelegate> {
 	
 }
 - (IBAction)startCapture:(id)sender;
