@@ -7,9 +7,10 @@
  */
 typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 
-@interface ReadBehindFile : NSObject {
-	NSURL* file;
-	bool stop;
+@interface ReadBehindFile : NSObject <NSStreamDelegate> {
+	NSURL* _file;
+	bool _stop;
+	BlockCallback _block;
 	dispatch_queue_t queue;
 }
 + (ReadBehindFile*)initWithURL:(NSURL*)file;
@@ -21,27 +22,47 @@ typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 
 + (ReadBehindFile*)initWithURL:(NSURL *)file {
 	ReadBehindFile* instance = [[ReadBehindFile alloc] init];
-	instance->file = file;
+	instance->_file = file;
 	return instance;
 }
 
 - (void)start:(BlockCallback)block {
 	queue = dispatch_queue_create("ReadBehindFile", NULL);
-	stop = false;
-	dispatch_async(queue, ^ {
-		NSInputStream *stream = [NSInputStream inputStreamWithURL:file];
-		uint8_t buffer[65536];
-		while (!stop) {
-			NSUInteger read = [stream read:buffer maxLength:65536];
-			if (read > 0) block(buffer, read);
-			sleep(1);
+	_stop = false;
+	_block = block;
+//	dispatch_async(queue, ^ {
+		NSInputStream *stream = [NSInputStream inputStreamWithURL:_file];
+		[stream setDelegate:self];
+		[stream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+		[stream open];
+//		uint8_t buffer[65536];
+//		while (!stop) {
+//			NSUInteger read = [stream read:buffer maxLength:65536];
+//			if (read > 0) block(buffer, read);
+//			sleep(1);
+//		}
+//		[stream close];
+//	});
+}
+
+
+- (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
+	NSInputStream *is = (NSInputStream *)aStream;
+	switch (eventCode) {
+		case NSStreamEventHasBytesAvailable: {
+			#define BUFFER_SIZE 65536
+			uint8_t buffer[BUFFER_SIZE];
+			NSUInteger len = [is read:buffer maxLength:BUFFER_SIZE];
+			if (len > 0) _block(buffer, len);
+			break;
 		}
-		[stream close];
-	});
+		default:
+			return;
+	}
 }
 
 - (void)stop {
-	stop = true;
+	_stop = true;
 }
 
 @end
@@ -50,6 +71,7 @@ typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 @interface ViewController () {
 	NSURL *videoFileUrl;
 	ReadBehindFile* readBehindFile;
+	int count;
 	
 	AVCaptureDevice *captureDevice;
 	AVCaptureSession *captureSession;
@@ -58,7 +80,6 @@ typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 	AVCaptureVideoPreviewLayer *previewLayer;
 	AVAssetWriter *videoWriter;
 	AVAssetWriterInput *videoWriterInput;
-	CMTime lastSampleTime;
 }
 
 @end
@@ -95,9 +116,9 @@ typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 		return;
 	}
 	
-	lastSampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
 	if (videoWriter.status != AVAssetWriterStatusWriting) {
-		[videoWriter startWriting];
+		CMTime lastSampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+		if (![videoWriter startWriting]) NSLog(@"Could not start writing");
 		[videoWriter startSessionAtSourceTime:lastSampleTime];
 	}
 		
@@ -105,50 +126,62 @@ typedef void (^BlockCallback)(uint8_t* data, unsigned int size);
 }
 
 - (void)newVideoSample:(CMSampleBufferRef)sampleBuffer {
+	count++;
+	if (count > 100) {
+		[videoWriter finishWritingWithCompletionHandler:^() {}];
+	}
 	if (videoWriter.status > AVAssetWriterStatusWriting) {
 		NSLog(@"Warning: writer status is %d", videoWriter.status);
 		if (videoWriter.status == AVAssetWriterStatusFailed) {
 			NSLog(@"Error: %@", videoWriter.error);
 			return;
 		}
-		
-		if (![videoWriterInput appendSampleBuffer:sampleBuffer]) NSLog(@"Unable to write to video input");
 	}
-	
+	if (![videoWriterInput appendSampleBuffer:sampleBuffer]) NSLog(@"Unable to write to video input");
+	NSError *error;
+	NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[videoFileUrl path] error:&error];
+	NSLog(@"Written %lld", [fileAttributes fileSize]);
 }
 
 - (IBAction)startCapture:(id)sender {
 	AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 	NSError *error = nil;
 	
+	// video output is the callback
 	videoOutput = [[AVCaptureVideoDataOutput alloc] init];
 	videoOutput.alwaysDiscardsLateVideoFrames = YES;
-	videoOutput.videoSettings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA] forKey:(id)kCVPixelBufferPixelFormatTypeKey];
-
-	videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
-	[captureSession addInput:videoInput];
-	[captureSession addOutput:videoOutput];
+	videoOutput.videoSettings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange] forKey:(id)kCVPixelBufferPixelFormatTypeKey];
 	dispatch_queue_t queue = dispatch_queue_create("VideoCaptureQueue", NULL);
     [videoOutput setSampleBufferDelegate:self queue:queue];
+
+	// video input is the camera
+	videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
 	
-	// Video compression settings
+	// capture session connects the input with the output (camera -> self.captureOutput)
+	[captureSession addInput:videoInput];
+	[captureSession addOutput:videoOutput];
+		
+	// Video compression settings & video writer input
 	NSDictionary *videoCompressionProps = [NSDictionary dictionaryWithObjectsAndKeys:
-										   [NSNumber numberWithDouble:128.0*1024.0], AVVideoAverageBitRateKey,
-										   nil ];
+										   [NSNumber numberWithDouble:128.0 * 1024.0], AVVideoAverageBitRateKey,
+										   nil];
 	NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 								   AVVideoCodecH264, AVVideoCodecKey,
-								   [NSNumber numberWithInt:192], AVVideoWidthKey,
-								   [NSNumber numberWithInt:144], AVVideoHeightKey,
+								   [NSNumber numberWithInt:1080], AVVideoWidthKey,
+								   [NSNumber numberWithInt:720], AVVideoHeightKey,
 								   videoCompressionProps, AVVideoCompressionPropertiesKey,
 								   nil];
+	videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+	videoWriterInput.expectsMediaDataInRealTime = YES;
 
+	// writer will write the video to the given file
 	videoWriter = [[AVAssetWriter alloc] initWithURL:videoFileUrl fileType:AVFileTypeQuickTimeMovie error:&error];
 	videoWriter.shouldOptimizeForNetworkUse = true;
-	videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
 	[videoWriter addInput:videoWriterInput];
 
+	// start the capture session
 	[captureSession startRunning];
-	[readBehindFile start:^(uint8_t *data, unsigned int size) { NSLog(@"Read %d bytes", size); }];
+	//[readBehindFile start:^(uint8_t *data, unsigned int size) { NSLog(@"Read %d bytes", size); }];
 }
 
 @end
