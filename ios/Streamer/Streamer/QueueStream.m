@@ -6,15 +6,15 @@
 }
 
 - (void)open {
-	
+	streamStatus = NSStreamStatusOpen;
 }
 
 - (void)close {
-	
+	streamStatus = NSStreamStatusClosed;
 }
 
 - (NSStreamStatus)streamStatus {
-    return NSStreamStatusOpen;
+    return streamStatus;
 }
 
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode {

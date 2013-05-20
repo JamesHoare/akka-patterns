@@ -1,5 +1,6 @@
 #import "ViewController.h"
 #include "AFNetworking/AFHTTPRequestOperation.h"
+#include "AFNetworking/AFHTTPClient.h"
 #include "QueueStream.h"
 
 @interface ViewController () {
@@ -50,9 +51,9 @@
 	
 	queueStream = [[QueueStream alloc] init];
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
-	[request setHTTPBodyStream:queueStream];
 	[request setTimeoutInterval:5.0];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+	[operation setInputStream:queueStream];
 	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
 		NSLog(@":)");
 	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
