@@ -47,10 +47,12 @@
 
 - (IBAction)startCapture:(id)sender	{
 	[NSStream createBoundInputStream:&postStream outputStream:&videoStream bufferSize:16384];
+	
+	
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
-	[request setTimeoutInterval:1.0];
+	[request setTimeoutInterval:30.0];
 	[request setHTTPMethod:@"POST"];
-	NSInputStream *is = [NSInputStream inputStreamWithData:[@"foadfsdfsafdd" dataUsingEncoding:NSUTF8StringEncoding]];
+	NSInputStream *is = [[HSRandomDataInputStream alloc] init]; //[NSInputStream inputStreamWithData:[@"foadfsdfsafdd" dataUsingEncoding:NSUTF8StringEncoding]];
 	[request setHTTPBodyStream:is];
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
@@ -60,7 +62,6 @@
 		NSLog(@":( %@", error);
 	}];
 	[operation start];
-	[operation waitUntilFinished];
 
 #if !(TARGET_IPHONE_SIMULATOR)
 	// begin the capture
