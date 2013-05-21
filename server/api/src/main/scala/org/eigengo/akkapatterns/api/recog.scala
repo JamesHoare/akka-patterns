@@ -79,7 +79,7 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
 
   def receive = {
     case ChunkedRequestStart(HttpRequest(HttpMethods.POST, "/recog/stream", _, entity, _)) =>
-      println("start" + entity.asString)
+      print("start" + entity.asString)
       os = new FileOutputStream("/Users/janmachacek/foo.mov")
     case MessageChunk(body, extensions) =>
       print(".")
