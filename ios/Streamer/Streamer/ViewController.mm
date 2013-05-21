@@ -74,7 +74,7 @@
 	videoOutput.alwaysDiscardsLateVideoFrames = YES;
 	videoOutput.videoSettings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA] forKey:(id)kCVPixelBufferPixelFormatTypeKey];
 	dispatch_queue_t queue = dispatch_queue_create("VideoCaptureQueue", NULL);
-    [videoOutput setSampleBufferDelegate:self queue:queue];
+	[videoOutput setSampleBufferDelegate:self queue:queue];
 	
 	// video input is the camera
 	AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
