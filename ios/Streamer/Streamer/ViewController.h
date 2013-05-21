@@ -6,5 +6,5 @@
 	
 }
 - (IBAction)startCapture:(id)sender;
-
+- (IBAction)stopCapture:(id)sender;
 @end

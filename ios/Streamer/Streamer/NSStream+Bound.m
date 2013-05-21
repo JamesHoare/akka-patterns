@@ -1,32 +1,5 @@
 #import "NSStream+Bound.h"
 
-@implementation NSStream (BoundPairAdditions)
-
-+ (void)createBoundInputStream:(out NSInputStream * __strong*)inputStreamPtr outputStream:(out NSOutputStream * __strong*)outputStreamPtr bufferSize:(NSUInteger)bufferSize {
-    CFReadStreamRef     readStream;
-    CFWriteStreamRef    writeStream;
-	
-    assert((inputStreamPtr != NULL) || (outputStreamPtr != NULL));
-	
-    readStream = NULL;
-    writeStream = NULL;
-	
-    CFStreamCreateBoundPair(kCFAllocatorDefault,
-							((inputStreamPtr  != nil) ? &readStream : NULL),
-							((outputStreamPtr != nil) ? &writeStream : NULL),
-							(CFIndex) bufferSize);
-	
-    if (inputStreamPtr != NULL) {
-        *inputStreamPtr = CFBridgingRelease(readStream);
-    }
-    if (outputStreamPtr != NULL) {
-        *outputStreamPtr = CFBridgingRelease(writeStream);
-    }
-}
-
-@end
-
-
 @implementation HSRandomDataInputStream
 {
     NSStreamStatus streamStatus;
@@ -44,7 +17,7 @@
     if (self) {
         // Initialization code here.
         streamStatus = NSStreamStatusNotOpen;
-		_lock = [[NSLock alloc] init];
+		_lock = dispatch_semaphore_create(0);
 		_data = nil;
     }
     
@@ -59,6 +32,7 @@
 
 - (void)close {
     streamStatus = NSStreamStatusClosed;
+	dispatch_semaphore_signal(_lock);
 }
 
 - (id<NSStreamDelegate>)delegate {
@@ -95,13 +69,17 @@
 
 - (void)setData:(NSData *)data {
 	_data = data;
-	[_lock unlock];
+	dispatch_semaphore_signal(_lock);
 }
 
 #pragma mark - NSInputStream subclass overrides
 
 - (NSInteger)read:(uint8_t *)buffer maxLength:(NSUInteger)len {
-	[_lock lock];
+	if (streamStatus != NSStreamStatusOpen) return -1;
+	
+	dispatch_semaphore_wait(_lock, DISPATCH_TIME_FOREVER);
+	if (streamStatus != NSStreamStatusOpen) return -1;
+
 	NSUInteger readLen = MIN([_data length], len);
 	uint8_t* dataBuffer = (uint8_t*)[_data bytes];
 	for (NSUInteger i = 0; i < readLen; i++) {

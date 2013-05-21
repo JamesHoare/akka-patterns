@@ -14,7 +14,7 @@ import javax.imageio.ImageIO
 object Main {
 
   def main(args: Array[String]) {
-//    val f = FrameGrab.getFrame(new File("/Users/janmachacek/Desktop/x.mp4"), 8000)
+//    val f = FrameGrab.getFrame(new File("/Users/janmachacek/foo.mov"), 8000)
 //    ImageIO.write(f, "png", new File("/Users/janmachacek/Tmp/x.png"))
 
     implicit val system = ActorSystem("AkkaPatterns",

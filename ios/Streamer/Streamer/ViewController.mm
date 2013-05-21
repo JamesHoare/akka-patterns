@@ -14,8 +14,7 @@
 	AVCaptureVideoPreviewLayer *previewLayer;
 	
 	NSURL *serverUrl;
-	NSOutputStream *videoStream;
-	NSInputStream *postStream;
+	HSRandomDataInputStream *videoStream;
 }
 
 - (void)viewDidLoad {
@@ -28,7 +27,7 @@
 	
 	// Preview layer that will show the video
 	previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:captureSession];
-	previewLayer.frame = self.view.bounds;
+	previewLayer.frame = CGRectMake(0, 0, 200, 200);
 	previewLayer.contentsGravity = kCAGravityResizeAspectFill;
 	previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 	[self.view.layer addSublayer:previewLayer];
@@ -46,14 +45,11 @@
 }
 
 - (IBAction)startCapture:(id)sender	{
-	[NSStream createBoundInputStream:&postStream outputStream:&videoStream bufferSize:16384];
-	
-	
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
 	[request setTimeoutInterval:30.0];
 	[request setHTTPMethod:@"POST"];
-	HSRandomDataInputStream *is = [[HSRandomDataInputStream alloc] init]; //[NSInputStream inputStreamWithData:[@"foadfsdfsafdd" dataUsingEncoding:NSUTF8StringEncoding]];
-	[request setHTTPBodyStream:is];
+	videoStream = [[HSRandomDataInputStream alloc] init];
+	[request setHTTPBodyStream:videoStream];
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
 	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -62,16 +58,21 @@
 		NSLog(@":( %@", error);
 	}];
 	[operation start];
+#if TARGET_IPHONE_SIMULATOR
+	sleep(5);
+	[videoStream setData:[@"A" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(5);
+	[videoStream setData:[@"B" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(5);
+	[videoStream setData:[@"C" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(5);
+	[videoStream setData:[@"D" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(5);
+	[videoStream setData:[@"E" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(5);
+	[videoStream close];
+#endif
 	
-	[is setData:[@"A" dataUsingEncoding:NSUTF8StringEncoding]];
-	sleep(1);
-	[is setData:[@"B" dataUsingEncoding:NSUTF8StringEncoding]];
-	sleep(1);
-	[is setData:[@"C" dataUsingEncoding:NSUTF8StringEncoding]];
-	sleep(1);
-	[is setData:[@"D" dataUsingEncoding:NSUTF8StringEncoding]];
-
-
 #if !(TARGET_IPHONE_SIMULATOR)
 	// begin the capture
 	AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -80,7 +81,7 @@
 	// video output is the callback
 	videoOutput = [[AVCaptureVideoDataOutput alloc] init];
 	videoOutput.alwaysDiscardsLateVideoFrames = YES;
-	videoOutput.videoSettings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange] forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+	//videoOutput.videoSettings = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange] forKey:(id)kCVPixelBufferPixelFormatTypeKey];
 	dispatch_queue_t queue = dispatch_queue_create("VideoCaptureQueue", NULL);
     [videoOutput setSampleBufferDelegate:self queue:queue];
 	
@@ -97,6 +98,14 @@
 #endif
 }
 
+- (IBAction)stopCapture:(id)sender {
+	[captureSession stopRunning];
+#if !(TARGET_IPHONE_SIMULATOR)
+	[encoder stopEncoder];
+	[videoStream close];
+#endif
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 #if !(TARGET_IPHONE_SIMULATOR)
 	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
@@ -105,8 +114,7 @@
 }
 
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
-	uint8_t* buffer = (uint8_t*)[data bytes];
-	[videoStream write:buffer maxLength:[data length]];
+	[videoStream setData:data];
 }
 
 @end

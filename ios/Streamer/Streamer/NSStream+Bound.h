@@ -1,13 +1,9 @@
 #import <Foundation/Foundation.h>
 
-@interface NSStream (BoundPairAdditions)
-+ (void)createBoundInputStream:(out NSInputStream * __strong*)inputStreamPtr outputStream:(out NSOutputStream * __strong*)outputStreamPtr bufferSize:(NSUInteger)bufferSize;
-@end
-
 @interface HSRandomDataInputStream : NSInputStream <NSStreamDelegate> {
 @private
     NSData *_data;
-	NSLock *_lock;
+	dispatch_semaphore_t _lock;
 }
 - (id)init;
 - (void)setData:(NSData*)data;
