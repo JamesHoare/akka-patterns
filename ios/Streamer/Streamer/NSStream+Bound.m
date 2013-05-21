@@ -44,8 +44,8 @@
     if (self) {
         // Initialization code here.
         streamStatus = NSStreamStatusNotOpen;
-        
-        [self setDelegate:self];
+		_lock = [[NSLock alloc] init];
+		_data = nil;
     }
     
     return self;
@@ -67,9 +67,6 @@
 
 - (void)setDelegate:(id<NSStreamDelegate>)aDelegate {
     delegate = aDelegate;
-    if (delegate == nil) {
-    	delegate = self;
-    }
 }
 
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode {
@@ -96,28 +93,22 @@
     return nil;
 }
 
+- (void)setData:(NSData *)data {
+	_data = data;
+	[_lock unlock];
+}
 
 #pragma mark - NSInputStream subclass overrides
 
 - (NSInteger)read:(uint8_t *)buffer maxLength:(NSUInteger)len {
-	
-	for (NSUInteger i=0; i<len; ++i) {
-		buffer[i] = arc4random() & 0x00000000ffffffff;
+	[_lock lock];
+	NSUInteger readLen = MIN([_data length], len);
+	uint8_t* dataBuffer = (uint8_t*)[_data bytes];
+	for (NSUInteger i = 0; i < readLen; i++) {
+		buffer[i] = dataBuffer[i];
 	}
-	sleep(1);
-	/*
-	if (CFReadStreamGetStatus((CFReadStreamRef)self) == kCFStreamStatusOpen) {
-        double delayInSeconds = 1;
-        dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
-        dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-            if (copiedCallback && (requestedEvents & kCFStreamEventHasBytesAvailable)) {
-                copiedCallback((__bridge CFReadStreamRef)self, kCFStreamEventHasBytesAvailable, &copiedContext);
-            }
-        });
-    }
-	 */
 	
-	return len;
+	return readLen;
 }
 
 - (BOOL)getBuffer:(uint8_t **)buffer length:(NSUInteger *)len {
@@ -139,30 +130,7 @@
 - (BOOL)_setCFClientFlags:(CFOptionFlags)inFlags
                  callback:(CFReadStreamClientCallBack)inCallback
                   context:(CFStreamClientContext *)inContext {
-	
-	if (inCallback != NULL) {
-		requestedEvents = inFlags;
-		copiedCallback = inCallback;
-		memcpy(&copiedContext, inContext, sizeof(CFStreamClientContext));
-		
-		if (copiedContext.info && copiedContext.retain) {
-			copiedContext.retain(copiedContext.info);
-		}
-		
-		copiedCallback((__bridge CFReadStreamRef)self, kCFStreamEventHasBytesAvailable, &copiedContext);
-	}
-	else {
-		requestedEvents = kCFStreamEventNone;
-		copiedCallback = NULL;
-		if (copiedContext.info && copiedContext.release) {
-			copiedContext.release(copiedContext.info);
-		}
-		
-		memset(&copiedContext, 0, sizeof(CFStreamClientContext));
-	}
-	
 	return YES;
-	
 }
 
 - (void)_unscheduleFromCFRunLoop:(CFRunLoopRef)aRunLoop forMode:(CFStringRef)aMode {

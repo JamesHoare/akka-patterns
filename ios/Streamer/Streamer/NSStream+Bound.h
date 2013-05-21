@@ -6,7 +6,9 @@
 
 @interface HSRandomDataInputStream : NSInputStream <NSStreamDelegate> {
 @private
-    
+    NSData *_data;
+	NSLock *_lock;
 }
-
+- (id)init;
+- (void)setData:(NSData*)data;
 @end

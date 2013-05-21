@@ -52,7 +52,7 @@
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
 	[request setTimeoutInterval:30.0];
 	[request setHTTPMethod:@"POST"];
-	NSInputStream *is = [[HSRandomDataInputStream alloc] init]; //[NSInputStream inputStreamWithData:[@"foadfsdfsafdd" dataUsingEncoding:NSUTF8StringEncoding]];
+	HSRandomDataInputStream *is = [[HSRandomDataInputStream alloc] init]; //[NSInputStream inputStreamWithData:[@"foadfsdfsafdd" dataUsingEncoding:NSUTF8StringEncoding]];
 	[request setHTTPBodyStream:is];
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
@@ -62,6 +62,15 @@
 		NSLog(@":( %@", error);
 	}];
 	[operation start];
+	
+	[is setData:[@"A" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(1);
+	[is setData:[@"B" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(1);
+	[is setData:[@"C" dataUsingEncoding:NSUTF8StringEncoding]];
+	sleep(1);
+	[is setData:[@"D" dataUsingEncoding:NSUTF8StringEncoding]];
+
 
 #if !(TARGET_IPHONE_SIMULATOR)
 	// begin the capture
