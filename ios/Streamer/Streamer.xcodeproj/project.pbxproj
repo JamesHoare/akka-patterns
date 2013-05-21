@@ -17,7 +17,7 @@
 		5468FFC6174A5A81002210B8 /* AFURLConnectionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFBB174A5A81002210B8 /* AFURLConnectionOperation.m */; };
 		5468FFC7174A5A81002210B8 /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFBD174A5A81002210B8 /* AFXMLRequestOperation.m */; };
 		5468FFC8174A5A81002210B8 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFBF174A5A81002210B8 /* UIImageView+AFNetworking.m */; };
-		5468FFCB174A5CEF002210B8 /* NSStream+Bound.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFCA174A5CEF002210B8 /* NSStream+Bound.m */; };
+		5468FFCB174A5CEF002210B8 /* BlockingQueueInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFCA174A5CEF002210B8 /* BlockingQueueInputStream.m */; };
 		54F8702617462320006F6C0F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702517462320006F6C0F /* UIKit.framework */; };
 		54F8702817462320006F6C0F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702717462320006F6C0F /* Foundation.framework */; };
 		54F8702A17462320006F6C0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702917462320006F6C0F /* CoreGraphics.framework */; };
@@ -56,8 +56,8 @@
 		5468FFBD174A5A81002210B8 /* AFXMLRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFXMLRequestOperation.m; sourceTree = "<group>"; };
 		5468FFBE174A5A81002210B8 /* UIImageView+AFNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+AFNetworking.h"; sourceTree = "<group>"; };
 		5468FFBF174A5A81002210B8 /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
-		5468FFC9174A5CEF002210B8 /* NSStream+Bound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSStream+Bound.h"; sourceTree = "<group>"; };
-		5468FFCA174A5CEF002210B8 /* NSStream+Bound.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSStream+Bound.m"; sourceTree = "<group>"; };
+		5468FFC9174A5CEF002210B8 /* BlockingQueueInputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockingQueueInputStream.h; sourceTree = "<group>"; };
+		5468FFCA174A5CEF002210B8 /* BlockingQueueInputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlockingQueueInputStream.m; sourceTree = "<group>"; };
 		54F8702217462320006F6C0F /* Streamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Streamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54F8702517462320006F6C0F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		54F8702717462320006F6C0F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -167,8 +167,8 @@
 				54F8703D17462320006F6C0F /* ViewController.h */,
 				54F8703E17462320006F6C0F /* ViewController.mm */,
 				54F8704017462320006F6C0F /* ViewController.xib */,
-				5468FFC9174A5CEF002210B8 /* NSStream+Bound.h */,
-				5468FFCA174A5CEF002210B8 /* NSStream+Bound.m */,
+				5468FFC9174A5CEF002210B8 /* BlockingQueueInputStream.h */,
+				5468FFCA174A5CEF002210B8 /* BlockingQueueInputStream.m */,
 				5468FFAC174A5A81002210B8 /* AFNetworking */,
 				54F8702C17462320006F6C0F /* Supporting Files */,
 			);
@@ -267,7 +267,7 @@
 				5468FFC6174A5A81002210B8 /* AFURLConnectionOperation.m in Sources */,
 				5468FFC7174A5A81002210B8 /* AFXMLRequestOperation.m in Sources */,
 				5468FFC8174A5A81002210B8 /* UIImageView+AFNetworking.m in Sources */,
-				5468FFCB174A5CEF002210B8 /* NSStream+Bound.m in Sources */,
+				5468FFCB174A5CEF002210B8 /* BlockingQueueInputStream.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

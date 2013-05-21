@@ -1,6 +1,6 @@
-#import "NSStream+Bound.h"
+#import "BlockingQueueInputStream.h"
 
-@implementation HSRandomDataInputStream {
+@implementation BlockingQueueInputStream {
     NSStreamStatus streamStatus;
     id <NSStreamDelegate> delegate;
 }
@@ -61,7 +61,7 @@
     return nil;
 }
 
-- (void)setData:(NSData *)data {
+- (void)appendData:(NSData *)data {
 	dispatch_semaphore_wait(writeLock, DISPATCH_TIME_FOREVER);
 	_data = data;
 	dispatch_semaphore_signal(readLock);

@@ -1,7 +1,7 @@
 #import "ViewController.h"
 #include "AFNetworking/AFHTTPRequestOperation.h"
 #include "AFNetworking/AFHTTPClient.h"
-#include "NSStream+Bound.h"
+#include "BlockingQueueInputStream.h"
 
 #define FRAMES_PER_SECOND 5
 #define FRAMES_PER_SECOND_MOD (25 / FRAMES_PER_SECOND)
@@ -15,7 +15,7 @@
 	AVCaptureVideoPreviewLayer *previewLayer;
 	
 	NSURL *serverUrl;
-	HSRandomDataInputStream *videoStream;
+	BlockingQueueInputStream *videoStream;
 }
 
 - (void)viewDidLoad {
@@ -53,7 +53,7 @@
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
 	[request setTimeoutInterval:30.0];
 	[request setHTTPMethod:@"POST"];
-	videoStream = [[HSRandomDataInputStream alloc] init];
+	videoStream = [[BlockingQueueInputStream alloc] init];
 	[request setHTTPBodyStream:videoStream];
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
@@ -108,7 +108,7 @@
 }
 
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
-	[videoStream setData:data];
+	[videoStream appendData:data];
 }
 
 @end
