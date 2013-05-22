@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		540FCF25174CCE2D0096EC94 /* BlockingQueueInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 540FCF22174CCE2D0096EC94 /* BlockingQueueInputStream.m */; };
-		540FCF26174CCE2D0096EC94 /* CVServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 540FCF24174CCE2D0096EC94 /* CVServerConnection.m */; };
+		540FCF2C174CCE4E0096EC94 /* BlockingQueueInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 540FCF29174CCE4E0096EC94 /* BlockingQueueInputStream.m */; };
+		540FCF2D174CCE4E0096EC94 /* CVServerConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 540FCF2B174CCE4E0096EC94 /* CVServerConnection.m */; };
 		5468FF6E174A1C64002210B8 /* i264Encoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5468FF6D174A1C64002210B8 /* i264Encoder.a */; };
 		5468FFC0174A5A81002210B8 /* AFHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFAE174A5A81002210B8 /* AFHTTPClient.m */; };
 		5468FFC1174A5A81002210B8 /* AFHTTPRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 5468FFB0174A5A81002210B8 /* AFHTTPRequestOperation.m */; };
@@ -37,10 +37,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		540FCF21174CCE2D0096EC94 /* BlockingQueueInputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockingQueueInputStream.h; sourceTree = "<group>"; };
-		540FCF22174CCE2D0096EC94 /* BlockingQueueInputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlockingQueueInputStream.m; sourceTree = "<group>"; };
-		540FCF23174CCE2D0096EC94 /* CVServerConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVServerConnection.h; sourceTree = "<group>"; };
-		540FCF24174CCE2D0096EC94 /* CVServerConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CVServerConnection.m; sourceTree = "<group>"; };
+		540FCF28174CCE4E0096EC94 /* BlockingQueueInputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockingQueueInputStream.h; sourceTree = "<group>"; };
+		540FCF29174CCE4E0096EC94 /* BlockingQueueInputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlockingQueueInputStream.m; sourceTree = "<group>"; };
+		540FCF2A174CCE4E0096EC94 /* CVServerConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVServerConnection.h; sourceTree = "<group>"; };
+		540FCF2B174CCE4E0096EC94 /* CVServerConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CVServerConnection.m; sourceTree = "<group>"; };
 		5468FF6D174A1C64002210B8 /* i264Encoder.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = i264Encoder.a; path = Streamer/i264Encoder.a; sourceTree = "<group>"; };
 		5468FFAD174A5A81002210B8 /* AFHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFHTTPClient.h; sourceTree = "<group>"; };
 		5468FFAE174A5A81002210B8 /* AFHTTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFHTTPClient.m; sourceTree = "<group>"; };
@@ -103,15 +103,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		540FCF20174CCE2D0096EC94 /* Library */ = {
+		540FCF27174CCE4E0096EC94 /* CVServer */ = {
 			isa = PBXGroup;
 			children = (
-				540FCF21174CCE2D0096EC94 /* BlockingQueueInputStream.h */,
-				540FCF22174CCE2D0096EC94 /* BlockingQueueInputStream.m */,
-				540FCF23174CCE2D0096EC94 /* CVServerConnection.h */,
-				540FCF24174CCE2D0096EC94 /* CVServerConnection.m */,
+				540FCF28174CCE4E0096EC94 /* BlockingQueueInputStream.h */,
+				540FCF29174CCE4E0096EC94 /* BlockingQueueInputStream.m */,
+				540FCF2A174CCE4E0096EC94 /* CVServerConnection.h */,
+				540FCF2B174CCE4E0096EC94 /* CVServerConnection.m */,
 			);
-			path = Library;
+			path = CVServer;
 			sourceTree = "<group>";
 		};
 		5468FFAC174A5A81002210B8 /* AFNetworking */ = {
@@ -181,7 +181,7 @@
 				54F8703D17462320006F6C0F /* ViewController.h */,
 				54F8703E17462320006F6C0F /* ViewController.mm */,
 				54F8704017462320006F6C0F /* ViewController.xib */,
-				540FCF20174CCE2D0096EC94 /* Library */,
+				540FCF27174CCE4E0096EC94 /* CVServer */,
 				5468FFAC174A5A81002210B8 /* AFNetworking */,
 				54F8702C17462320006F6C0F /* Supporting Files */,
 			);
@@ -280,8 +280,8 @@
 				5468FFC6174A5A81002210B8 /* AFURLConnectionOperation.m in Sources */,
 				5468FFC7174A5A81002210B8 /* AFXMLRequestOperation.m in Sources */,
 				5468FFC8174A5A81002210B8 /* UIImageView+AFNetworking.m in Sources */,
-				540FCF25174CCE2D0096EC94 /* BlockingQueueInputStream.m in Sources */,
-				540FCF26174CCE2D0096EC94 /* CVServerConnection.m in Sources */,
+				540FCF2C174CCE4E0096EC94 /* BlockingQueueInputStream.m in Sources */,
+				540FCF2D174CCE4E0096EC94 /* CVServerConnection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
