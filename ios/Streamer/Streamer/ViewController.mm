@@ -1,6 +1,4 @@
 #import "ViewController.h"
-#include "AFNetworking/AFHTTPRequestOperation.h"
-#include "AFNetworking/AFHTTPClient.h"
 
 #define FRAMES_PER_SECOND 5
 #define FRAMES_PER_SECOND_MOD (25 / FRAMES_PER_SECOND)
