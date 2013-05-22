@@ -13,6 +13,8 @@
 	bool capturing;
 }
 
+#pragma mark - Housekeeping
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 	capturing = false;
@@ -22,6 +24,8 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
+
+#pragma mark - Video capture (using the back camera)
 
 - (void)startCapture {
 #if !(TARGET_IPHONE_SIMULATOR)
@@ -74,6 +78,17 @@
 #endif
 }
 
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+#if !(TARGET_IPHONE_SIMULATOR)
+	frameMod++;
+	if (frameMod % FRAMES_PER_SECOND_MOD == 0) {
+		[frameInput submitFrame:sampleBuffer];
+	}
+#endif
+}
+
+#pragma mark - UI
+
 - (IBAction)startStop:(id)sender {
 	if (capturing) {
 		[self stopCapture];
@@ -88,14 +103,6 @@
 	}
 }
 
-- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-#if !(TARGET_IPHONE_SIMULATOR)
-	frameMod++;
-	if (frameMod % FRAMES_PER_SECOND_MOD == 0) {
-		[frameInput submitFrame:sampleBuffer];
-	}
-#endif
-}
 
 #pragma mark - CVServerConnectionDelegate methods
 

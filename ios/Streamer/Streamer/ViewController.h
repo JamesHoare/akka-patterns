@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import "CVServer/CVServerConnection.h"
+#import "CV/CVServerConnection.h"
 
 @interface ViewController : UIViewController<AVCaptureVideoDataOutputSampleBufferDelegate, CVServerConnectionDelegate>
 
