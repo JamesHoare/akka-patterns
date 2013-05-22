@@ -47,11 +47,11 @@ typedef enum {
 	return self;
 }
 
-+ (CVServerConnection*)connectionToStatic:(NSURL *)url andDelegate:(id<CVServerConnectionDelegate>)delegate {
++ (CVServerConnection*)connectionToStatic:(NSURL *)url withDelegate:(id<CVServerConnectionDelegate>)delegate {
 	return [[CVServerConnection alloc] initWithUrl:url delegate:delegate andMode:kCVServerConnecitonStatic];
 }
 
-+ (CVServerConnection*)connectionToStream:(NSURL *)url andDelegate:(id<CVServerConnectionDelegate>)delegate {
++ (CVServerConnection*)connectionToStream:(NSURL *)url withDelegate:(id<CVServerConnectionDelegate>)delegate {
 	return [[CVServerConnection alloc] initWithUrl:url delegate:delegate andMode:kCVServerConnecitonStream];
 }
 

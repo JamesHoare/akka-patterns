@@ -57,7 +57,7 @@
 	[captureSession startRunning];
 
 	// start the connection
-	CVServerConnection* connection = [CVServerConnection connectionToStream:serverUrl andDelegate:self];
+	CVServerConnection* connection = [CVServerConnection connectionToStream:serverUrl withDelegate:self];
 	frameInput = [connection begin];
 #endif
 }

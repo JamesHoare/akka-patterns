@@ -50,12 +50,12 @@
    * Constructs ``CVServerConnection`` that sends H.264 stream to the server at ``url``, informing the ``delegate`` of the
    * ultimate results.
    */
-+ (CVServerConnection*)connectionToStream:(NSURL*)url andDelegate:(id<CVServerConnectionDelegate>)delegate;
++ (CVServerConnection*)connectionToStream:(NSURL*)url withDelegate:(id<CVServerConnectionDelegate>)delegate;
   /**
    * Constructs ``CVServerConnection`` that sends JPEG images to the server at ``url``, informing the ``delegate`` of the
    * ultimate results.
    */
-+ (CVServerConnection*)connectionToStatic:(NSURL*)url andDelegate:(id<CVServerConnectionDelegate>)delegate;
++ (CVServerConnection*)connectionToStatic:(NSURL*)url withDelegate:(id<CVServerConnectionDelegate>)delegate;
   /**
    * Obtains the input that allows you to submit the frames. Depending on the way in which you constructed this object,
    * the ``delegate`` will receive response after the frame (static) or after you call the returned object's ``-close`` 
