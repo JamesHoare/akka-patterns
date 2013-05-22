@@ -1,8 +1,8 @@
 #import <UIKit/UIKit.h>
-#include <AVFoundation/AVFoundation.h>
-#include "i264Encoder.h"
+#import <AVFoundation/AVFoundation.h>
+#import "CVServerConnection.h"
 
-@interface ViewController : UIViewController<AVCaptureVideoDataOutputSampleBufferDelegate, NSURLConnectionDelegate> {
+@interface ViewController : UIViewController<AVCaptureVideoDataOutputSampleBufferDelegate, CVServerConnectionDelegate> {
 	
 }
 - (IBAction)startCapture:(id)sender;

@@ -1,21 +1,17 @@
 #import "ViewController.h"
 #include "AFNetworking/AFHTTPRequestOperation.h"
 #include "AFNetworking/AFHTTPClient.h"
-#include "BlockingQueueInputStream.h"
 
 #define FRAMES_PER_SECOND 5
 #define FRAMES_PER_SECOND_MOD (25 / FRAMES_PER_SECOND)
 
 @implementation ViewController {
-#if !(TARGET_IPHONE_SIMULATOR)
-	i264Encoder* encoder;
-	int frameMod;
-#endif
+	id<CVServerConnectionInput> frameInput;
 	AVCaptureSession *captureSession;
 	AVCaptureVideoPreviewLayer *previewLayer;
+	int frameMod;
 	
 	NSURL *serverUrl;
-	BlockingQueueInputStream *videoStream;
 }
 
 - (void)viewDidLoad {
@@ -33,16 +29,6 @@
 	previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 	[self.view.layer addSublayer:previewLayer];
 
-#if !(TARGET_IPHONE_SIMULATOR)
-	// encoder
-	encoder = [[i264Encoder alloc] initWithDelegate:self];
-	[encoder setInPicHeight:[NSNumber numberWithInt:480]];
-	[encoder setInPicWidth:[NSNumber numberWithInt:720]];
-	[encoder setFrameRate:[NSNumber numberWithInt:FRAMES_PER_SECOND]];
-	[encoder setKeyFrameInterval:[NSNumber numberWithInt:FRAMES_PER_SECOND * 5]];
-	[encoder setAvgDataRate:[NSNumber numberWithInt:100000]];
-	[encoder setBitRate:[NSNumber numberWithInt:100000]];
-#endif
 }
 
 - (void)didReceiveMemoryWarning {
@@ -50,20 +36,6 @@
 }
 
 - (IBAction)startCapture:(id)sender	{
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:serverUrl];
-	[request setTimeoutInterval:30.0];
-	[request setHTTPMethod:@"POST"];
-	videoStream = [[BlockingQueueInputStream alloc] init];
-	[request setHTTPBodyStream:videoStream];
-	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
-	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-		NSLog(@":)");
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-		NSLog(@":( %@", error);
-	}];
-	[operation start];
-	
 #if !(TARGET_IPHONE_SIMULATOR)
 	// begin the capture
 	AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -84,31 +56,44 @@
 	[captureSession addOutput:videoOutput];
 	
 	// start the capture session
-	[encoder startEncoder];
 	[captureSession startRunning];
+
+	// start the connection
+	CVServerConnection* connection = [CVServerConnection connectionToStream:serverUrl andDelegate:self];
+	frameInput = [connection begin];
 #endif
 }
 
 - (IBAction)stopCapture:(id)sender {
 	[captureSession stopRunning];
-#if !(TARGET_IPHONE_SIMULATOR)
-	[encoder stopEncoder];
-	[videoStream close];
-#endif
+	[frameInput close];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
 #if !(TARGET_IPHONE_SIMULATOR)
 	frameMod++;
 	if (frameMod % FRAMES_PER_SECOND_MOD == 0) {
-		CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-		[encoder encodePixelBuffer:pixelBuffer];
+		[frameInput submitFrame:sampleBuffer];
 	}
 #endif
 }
 
-- (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
-	[videoStream appendData:data];
+#pragma mark - CVServerConnectionDelegate methods
+
+- (void)cvServerConnectionOk:(id)response {
+	NSLog(@":))");
+}
+
+- (void)cvServerConnectionAccepted:(id)response {
+	NSLog(@":)");
+}
+
+- (void)cvServerConnectionRejected:(id)response {
+	NSLog(@":(");
+}
+
+- (void)cvServerConnectionFailed:(NSError *)reason {
+	NSLog(@":((");
 }
 
 @end

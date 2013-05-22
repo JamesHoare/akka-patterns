@@ -22,7 +22,9 @@ typedef enum {
 @end
 
 @interface CVServerConnectionInputStream : AbstractCVServerConnectionInput<CVServerConnectionInput> {
+#if !(TARGET_IPHONE_SIMULATOR)
 	i264Encoder* encoder;
+#endif
 }
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data;
 @end
@@ -71,6 +73,7 @@ typedef enum {
 	if (self) {
 		url = aUrl;
 		delegate = aDelegate;
+		[self initConnectionInput];
 	}
 	return self;
 }
@@ -96,10 +99,9 @@ typedef enum {
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
 	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-		NSLog(@":)");
 		[delegate cvServerConnectionOk:responseObject];
 	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-		NSLog(@":( %@", error);
+		[delegate cvServerConnectionFailed:error];
 	}];
 	[operation start];
 	[operation waitUntilFinished];
@@ -119,16 +121,6 @@ typedef enum {
 }
 
 - (void)initConnectionInput {
-	int framesPerSecond = 25;
-	
-	encoder = [[i264Encoder alloc] initWithDelegate:self];
-	[encoder setInPicHeight:[NSNumber numberWithInt:480]];
-	[encoder setInPicWidth:[NSNumber numberWithInt:720]];
-	[encoder setFrameRate:[NSNumber numberWithInt:framesPerSecond]];
-	[encoder setKeyFrameInterval:[NSNumber numberWithInt:framesPerSecond * 5]];
-	[encoder setAvgDataRate:[NSNumber numberWithInt:100000]];
-	[encoder setBitRate:[NSNumber numberWithInt:100000]];
-
 	stream = [[BlockingQueueInputStream alloc] init];
 
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -138,17 +130,30 @@ typedef enum {
 	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
 	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-		NSLog(@":)");
 		[delegate cvServerConnectionOk:responseObject];
 	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-		NSLog(@":( %@", error);
+		[delegate cvServerConnectionFailed:error];
 	}];
 	[operation start];
+	
+#if !(TARGET_IPHONE_SIMULATOR)
+	int framesPerSecond = 25;
+	encoder = [[i264Encoder alloc] initWithDelegate:self];
+	[encoder setInPicHeight:[NSNumber numberWithInt:480]];
+	[encoder setInPicWidth:[NSNumber numberWithInt:720]];
+	[encoder setFrameRate:[NSNumber numberWithInt:framesPerSecond]];
+	[encoder setKeyFrameInterval:[NSNumber numberWithInt:framesPerSecond * 5]];
+	[encoder setAvgDataRate:[NSNumber numberWithInt:100000]];
+	[encoder setBitRate:[NSNumber numberWithInt:100000]];
+	[encoder startEncoder];
+#endif
 }
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
+#if !(TARGET_IPHONE_SIMULATOR)
 	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(frame);
 	[encoder encodePixelBuffer:pixelBuffer];
+#endif
 }
 
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
@@ -157,6 +162,9 @@ typedef enum {
 
 - (void)close {
 	[stream close];
+#if !(TARGET_IPHONE_SIMULATOR)
+	[encoder stopEncoder];
+#endif
 }
 
 @end
