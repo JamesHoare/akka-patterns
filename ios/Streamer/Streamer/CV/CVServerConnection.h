@@ -43,7 +43,69 @@
 @end
 
 /**
- * Connects to the server.
+ * Maintains the connection to the CVServer at some URL; and constructs objects that allow you to submit frames to the
+ * server and reports the outcome of the processing that the server performed.
+ *
+ * Typical usage is (given some ``NSURL* serverUrl`` and ``id<CVServerConnectionDelegate> delegate``:
+ * ```
+ * @interface X<CVServerConnectionDelegate> 
+ * @end
+ *
+ * @implementation X {
+ *   AVCaptureSession* captureSession;
+ *   id<CVServerConnectionDelegate> input;
+ * }
+ *
+ * #pragma mark - AV Capture start and stop
+ *
+ * // when the user decides to start capturing
+ * - (void)startCapture {
+ *   input = [[CVServerConnection connectionToStream:serverUrl withDelegate:delegate] startRunning];
+ *   // start capture session; connecting some AVVideoOutput* to self (implementing AVCaptureVideoDataOutputSampleBufferDelegate) on some queue
+ *   captureSession = [[AVCaptureSession alloc] init];
+ *   AVVideoOutput *videoOutput = ...
+ *   [videoOutput setSampleBufferDelegate:self queue:queue];
+ *   ...
+ *   [captureSession startRunning];
+ * }
+ *
+ * // when the user decides to stop capture
+ * - (void)stopCapture {
+ *   [captureSession stopRunning];
+ *   [input stopRunning];
+ * }
+ * 
+ * // when frames arrive
+ * - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+ *   [input submitFrame:sampleBuffer];
+ * }
+ *
+ *
+ * #pragma mark - CVServerConnectionDelegate methods
+ *
+ * // the CV server accepted the entire operation (potentially consisting of multiple images or streams)
+ * - (void)cvServerConnectionOk:(id)response {
+ *   NSLog(@":))");
+ * }
+ *
+ * // the CV server accepted the image or stream, but more images or streams must follow
+ * - (void)cvServerConnectionAccepted:(id)response {
+ *   NSLog(@":)");
+ * }
+ *
+ * // the CV server rejected the image or stream
+ * - (void)cvServerConnectionRejected:(id)response {
+ *   NSLog(@":(");
+ * }
+ *
+ * // the CV server may have failed or there is no connection to it or something else catastrophic
+ * - (void)cvServerConnectionFailed:(NSError *)reason {
+ *   NSLog(@":((");
+ * }
+ *
+ *
+ * @end
+ * ```
  */
 @interface CVServerConnection : NSObject
   /**
