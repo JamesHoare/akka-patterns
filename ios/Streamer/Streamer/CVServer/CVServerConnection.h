@@ -39,7 +39,7 @@
   /**
    * Complete the stream of frames
    */
-- (void)close;
+- (void)stopRunning;
 @end
 
 /**
@@ -61,5 +61,5 @@
    * the ``delegate`` will receive response after the frame (static) or after you call the returned object's ``-close`` 
    * method (stream).
    */
-- (id<CVServerConnectionInput>)begin;
+- (id<CVServerConnectionInput>)startRunning;
 @end

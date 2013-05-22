@@ -55,7 +55,7 @@ typedef enum {
 	return [[CVServerConnection alloc] initWithUrl:url delegate:delegate andMode:kCVServerConnecitonStream];
 }
 
-- (id<CVServerConnectionInput>)begin {
+- (id<CVServerConnectionInput>)startRunning {
 	switch (mode) {
 		case kCVServerConnecitonStatic:
 			return [[CVServerConnectionInputStatic alloc] initWithUrl:url andDelegate:delegate];
@@ -107,7 +107,7 @@ typedef enum {
 	[operation waitUntilFinished];
 }
 
-- (void)close {
+- (void)stopRunning {
 	// This is a static connection. Nothing to see here.
 }
 
@@ -160,7 +160,7 @@ typedef enum {
 	[stream appendData:data];
 }
 
-- (void)close {
+- (void)stopRunning {
 	[stream close];
 #if !(TARGET_IPHONE_SIMULATOR)
 	[encoder stopEncoder];

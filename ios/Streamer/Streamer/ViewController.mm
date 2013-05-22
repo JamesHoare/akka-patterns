@@ -56,15 +56,14 @@
 	// start the capture session
 	[captureSession startRunning];
 
-	// start the connection
-	CVServerConnection* connection = [CVServerConnection connectionToStream:serverUrl withDelegate:self];
-	frameInput = [connection begin];
+	// start the connection and grab the CVServerConnectionInput
+	frameInput = [[CVServerConnection connectionToStream:serverUrl withDelegate:self] startRunning];
 #endif
 }
 
 - (IBAction)stopCapture:(id)sender {
 	[captureSession stopRunning];
-	[frameInput close];
+	[frameInput stopRunning];
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
