@@ -10,13 +10,21 @@
 	int frameMod;
 	
 	NSURL *serverUrl;
+	bool capturing;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-	
+	capturing = false;
 	serverUrl = [NSURL URLWithString:@"http://192.168.200.108:8088/recog/stream"];
-	
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+- (void)startCapture {
+#if !(TARGET_IPHONE_SIMULATOR)
 	// Video capture session; without a device attached to it.
 	captureSession = [[AVCaptureSession alloc] init];
 	
@@ -26,15 +34,7 @@
 	previewLayer.contentsGravity = kCAGravityResizeAspectFill;
 	previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 	[self.view.layer addSublayer:previewLayer];
-
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-}
-
-- (IBAction)startCapture:(id)sender	{
-#if !(TARGET_IPHONE_SIMULATOR)
+	
 	// begin the capture
 	AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 	NSError *error = nil;
@@ -55,15 +55,37 @@
 	
 	// start the capture session
 	[captureSession startRunning];
-
+	
 	// start the connection and grab the CVServerConnectionInput
 	frameInput = [[CVServerConnection connectionToStream:serverUrl withDelegate:self] startRunning];
 #endif
 }
 
-- (IBAction)stopCapture:(id)sender {
+- (void)stopCapture {
+#if !(TARGET_IPHONE_SIMULATOR)
 	[captureSession stopRunning];
 	[frameInput stopRunning];
+	
+	[previewLayer removeFromSuperlayer];
+	
+	previewLayer = nil;
+	captureSession = nil;
+	frameInput = nil;
+#endif
+}
+
+- (IBAction)startStop:(id)sender {
+	if (capturing) {
+		[self stopCapture];
+		[self.startStopButton setTitle:@"Start" forState:UIControlStateNormal];
+		[self.startStopButton setTintColor:[UIColor greenColor]];
+		capturing = false;
+	} else {
+		[self startCapture];
+		[self.startStopButton setTitle:@"Stop" forState:UIControlStateNormal];
+		[self.startStopButton setTintColor:[UIColor redColor]];
+		capturing = true;
+	}
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
