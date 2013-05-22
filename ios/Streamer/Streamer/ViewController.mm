@@ -1,4 +1,5 @@
 #import "ViewController.h"
+#import "CVDocumentPreflight.h"
 
 #define FRAMES_PER_SECOND 5
 #define FRAMES_PER_SECOND_MOD (25 / FRAMES_PER_SECOND)
