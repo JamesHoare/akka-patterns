@@ -27,6 +27,7 @@
 - (void)close {
     streamStatus = NSStreamStatusClosed;
 	dispatch_semaphore_signal(readLock);
+	dispatch_semaphore_signal(writeLock);
 }
 
 - (id<NSStreamDelegate>)delegate {
