@@ -35,12 +35,12 @@ object PatternsBuild extends Build {
   lazy val defaultSettings = Defaults.defaultSettings ++ graphSettings ++ Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.6", "-deprecation", "-unchecked"),
     javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation", "-Xlint:-options"),
-	// https://github.com/sbt/sbt/issues/702
-	javaOptions += "-Djava.util.logging.config.file=logging.properties",
-	javaOptions += "-Xmx2G",
-	outputStrategy := Some(StdoutOutput),
-	fork := true,
-	maxErrors := 1,
+    // https://github.com/sbt/sbt/issues/702
+    javaOptions += "-Djava.util.logging.config.file=logging.properties",
+    javaOptions += "-Xmx2G",
+    outputStrategy := Some(StdoutOutput),
+    fork := true,
+    maxErrors := 1,
     resolvers ++= Seq(
       Resolver.mavenLocal,
       Resolver.sonatypeRepo("releases"),
@@ -49,8 +49,8 @@ object PatternsBuild extends Build {
       Resolver.typesafeRepo("snapshots"),
       Resolver.sonatypeRepo("snapshots"),
       "Video Gorillas" at "http://videogorillas.com/m2/public",
-	    "Jasper Community" at "http://jasperreports.sourceforge.net/maven2"
-	  // resolvers += "neo4j repo" at "http://m2.neo4j.org/content/repositories/releases/"  
+      "Jasper Community" at "http://jasperreports.sourceforge.net/maven2"
+      // resolvers += "neo4j repo" at "http://m2.neo4j.org/content/repositories/releases/"  
     ),
     parallelExecution in Test := false
   ) ++ ScctPlugin.instrumentSettings ++ scalaxbSettings ++ ScalastylePlugin.Settings
@@ -61,53 +61,55 @@ object PatternsBuild extends Build {
   // https://github.com/eed3si9n/scalaxb/issues/199
   lazy val domain = module("domain") settings(
     libraryDependencies += java_logging, // will upgrade to scala_logging when released
-	libraryDependencies += akka_contrib,
-	libraryDependencies += akka,
-	libraryDependencies += scala_io_core,
-	libraryDependencies += scala_io_file,
-	libraryDependencies += scalad,
-	libraryDependencies += hector,
-	libraryDependencies += spring_core,
-	libraryDependencies += specs2 % "test",
+    libraryDependencies += akka_contrib,
+    libraryDependencies += akka,
+    libraryDependencies += scala_io_core,
+    libraryDependencies += scala_io_file,
+    libraryDependencies += scalad,
+    libraryDependencies += hector,
+    libraryDependencies += spring_core,
+    libraryDependencies += specs2 % "test",
     packageName in scalaxb in Compile := "org.eigengo.akkapatterns.domain.soap",
     sourceGenerators in Compile <+= scalaxb in Compile
     )
 
   lazy val test = module("test") dependsOn (domain) settings (
     libraryDependencies += specs2 % "compile",
-	libraryDependencies += cassandra_unit,
+    libraryDependencies += cassandra_unit,
     libraryDependencies += neo4j,
-	libraryDependencies += akka_testkit % "compile"
+    libraryDependencies += akka_testkit % "compile"
   )
 
   lazy val core = module("core") dependsOn(domain, test % "test") settings (
-	libraryDependencies += spray_client,
-	libraryDependencies += amqp,
-	libraryDependencies += rabbitmq,
-	libraryDependencies += mail,
-	libraryDependencies += neo4j,
-	libraryDependencies += scalaz_effect,
-	libraryDependencies += jasperreports,
-    libraryDependencies += poi
+    libraryDependencies += spray_client,
+    libraryDependencies += amqp,
+    libraryDependencies += rabbitmq,
+    libraryDependencies += mail,
+    libraryDependencies += neo4j,
+    libraryDependencies += scalaz_effect,
+    libraryDependencies += jasperreports,
+    libraryDependencies += poi,
+    libraryDependencies += smack,
+    libraryDependencies += smackx
   )
 
   lazy val api = module("api") dependsOn(core, test % "test") settings(
     libraryDependencies += spray_routing,
     libraryDependencies += jcodec,
     libraryDependencies += spray_testkit % "test"
-    )
+  )
 
   lazy val main = module("main") dependsOn(api, test % "test")
 
   lazy val root = Project(id = "parent", base = file("."), settings = defaultSettings) settings (
-  	  ScctPlugin.mergeReportSettings: _*
-	) settings (
-	  SbtStartScript.startScriptForClassesSettings: _*
-  	) settings (
-	  mainClass in (Compile, run) := Some("org.eigengo.akkapatterns.main.Main")
-	) aggregate (
-      domain, test, core, api, main
-    ) dependsOn (main) // yuck
+      ScctPlugin.mergeReportSettings: _*
+  ) settings (
+    SbtStartScript.startScriptForClassesSettings: _*
+  ) settings (
+    mainClass in (Compile, run) := Some("org.eigengo.akkapatterns.main.Main")
+  ) aggregate (
+    domain, test, core, api, main
+  ) dependsOn (main) // yuck
 }
 
 object Dependencies {
@@ -149,4 +151,6 @@ object Dependencies {
   val scala_io_core = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2"
   val scala_io_file = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
   val jcodec = "org.jcodec" % "jcodec" % "0.1.3"
+  val smack =  "org.igniterealtime.smack" % "smack" % "3.2.1"
+  val smackx =  "org.igniterealtime.smack" % "smackx" % "3.2.1"
 }
