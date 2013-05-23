@@ -1,7 +1,7 @@
 package org.eigengo.akkapatterns.api
 
 import spray.routing.Directives
-import org.eigengo.akkapatterns.domain.{DefaultTimeout, RecogSessionId}
+import org.eigengo.akkapatterns.domain.{Image, Frame, DefaultTimeout, RecogSessionId}
 import akka.actor.{Actor, ActorRef}
 import org.eigengo.akkapatterns.core.recog._
 import org.apache.commons.codec.binary.Base64
@@ -26,7 +26,7 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
   val headers = RawHeader("Access-Control-Allow-Origin", origin) :: Nil
 
   def image(sessionId: RecogSessionId)(ctx: RequestContext) {
-    (coordinator ? ProcessImage(sessionId, Base64.decodeBase64(ctx.request.entity.buffer))) onSuccess {
+    (coordinator ? ProcessImage(sessionId, Image(Base64.decodeBase64(ctx.request.entity.buffer)))) onSuccess {
       case x: RecogSessionAccepted  => ctx.complete(StatusCodes.Accepted,            headers, x)
       case x: RecogSessionRejected  => ctx.complete(StatusCodes.BadRequest,          headers, x)
       case x: RecogSessionCompleted => ctx.complete(StatusCodes.OK,                  headers, x)
@@ -51,7 +51,7 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
 }
 
 class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with DefaultTimeout {
-  var os: FileOutputStream = _
+//  var os: FileOutputStream = _
 
   def receive = {
     // POST to /recog
@@ -65,16 +65,25 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
     // stream to /recog/stream/:id
     case ChunkedRequestStart(HttpRequest(HttpMethods.POST, uri, _, entity, _)) if uri startsWith "/recog/stream/" =>
       val sessionId = UUID.fromString(uri.substring(14))
-      coordinator ! ProcessFrame()
-      print("start" + entity.asString)
-      os = new FileOutputStream("/Users/janmachacek/" + sessionId + ".mov")
+      coordinator ! ProcessFrame(sessionId, Frame(entity.buffer))
+
+//      print("start" + entity.asString)
+//      os = new FileOutputStream("/Users/janmachacek/" + sessionId + ".mov")
     case MessageChunk(body, extensions) =>
-      print(".")
-      os.write(body)
+      // parse the body
+      val frame = Array.ofDim[Byte](body.length - 36)
+      Array.copy(body, 36, frame, 0, frame.length)
+
+      val sessionIdUUID = UUID.fromString(new String(body, 0, 36))
+
+      if (body.length > 0) coordinator ! ProcessFrame(sessionIdUUID, Frame(frame))
+      else                 coordinator ! ProcessStreamEnd(sessionIdUUID)
+
+//      print(body.length)
+//      os.write(body)
     case ChunkedMessageEnd(extensions, trailer) =>
-      os.close()
-      println("end")
-      sender ! HttpResponse(entity = "!! end")
+//      os.close()
+      sender ! HttpResponse(entity = "{}")
 
     // POST to /recog/static/:id
     case HttpRequest(HttpMethods.POST, uri, _, entity, _) if uri startsWith "/recog/static/" =>

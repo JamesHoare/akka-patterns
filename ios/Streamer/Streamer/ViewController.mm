@@ -80,6 +80,7 @@
 	previewLayer = nil;
 	captureSession = nil;
 	frameInput = nil;
+	serverTransactionConnection = nil;
 #endif
 }
 

@@ -11,10 +11,11 @@ typedef enum {
 
 @interface AbstractCVServerConnectionInput : NSObject {
 @protected
-	NSURL* url;
+	NSURL *url;
+	NSString *sessionId;
 	id<CVServerConnectionDelegate> delegate;
 }
-- (id)initWithUrl:(NSURL*)url andDelegate:(id<CVServerConnectionDelegate>)delegate;
+- (id)initWithUrl:(NSURL*)url session:(NSString*)session andDelegate:(id<CVServerConnectionDelegate>)delegate;
 - (void)initConnectionInput;
 @end
 
@@ -49,11 +50,11 @@ typedef enum {
 }
 
 - (id<CVServerConnectionInput>)staticInput:(id<CVServerConnectionDelegate>)delegate {
-	return [[CVServerConnectionInputStatic alloc] initWithUrl:[self inputUrl:@"static"] andDelegate:delegate];
+	return [[CVServerConnectionInputStatic alloc] initWithUrl:[self inputUrl:@"static"] session:sessionId andDelegate:delegate];
 }
 
 - (id<CVServerConnectionInput>)streamInput:(id<CVServerConnectionDelegate>)delegate {
-	return [[CVServerConnectionInputStream alloc] initWithUrl:[self inputUrl:@"stream"] andDelegate:delegate];
+	return [[CVServerConnectionInputStream alloc] initWithUrl:[self inputUrl:@"stream"] session:sessionId andDelegate:delegate];
 }
 
 @end
@@ -73,6 +74,9 @@ typedef enum {
 }
 
 + (CVServerConnection*)connection:(NSURL *)baseUrl {
+	[[NSURLCache sharedURLCache] setMemoryCapacity:0];
+	[[NSURLCache sharedURLCache] setDiskCapacity:0];
+	
 	return [[CVServerConnection alloc] initWithUrl:baseUrl];
 }
 
@@ -91,10 +95,11 @@ typedef enum {
 
 @implementation AbstractCVServerConnectionInput
 
-- (id)initWithUrl:(NSURL*)aUrl andDelegate:(id<CVServerConnectionDelegate>)aDelegate {
+- (id)initWithUrl:(NSURL*)aUrl session:(NSString*)aSessionId andDelegate:(id<CVServerConnectionDelegate>)aDelegate {
 	self = [super init];
 	if (self) {
 		url = aUrl;
+		sessionId = aSessionId;
 		delegate = aDelegate;
 		[self initConnectionInput];
 	}
@@ -180,10 +185,14 @@ typedef enum {
 }
 
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
-	[stream appendData:data];
+	NSData* sessionIdData = [sessionId dataUsingEncoding:NSASCIIStringEncoding];
+	NSMutableData *frame = [NSMutableData dataWithData:sessionIdData];
+	[frame appendData:data];
+	[stream appendData:frame];
 }
 
 - (void)stopRunning {
+	[stream appendData:[sessionId dataUsingEncoding:NSASCIIStringEncoding]];
 	[stream close];
 #if !(TARGET_IPHONE_SIMULATOR)
 	[encoder stopEncoder];

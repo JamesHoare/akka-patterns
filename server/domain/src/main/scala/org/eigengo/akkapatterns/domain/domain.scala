@@ -37,7 +37,14 @@ package object domain {
   /**
    * The image structure
    */
-  type Image = Array[Byte]
+  case class Image(data: Array[Byte]) extends AnyVal
+  // type Image = Array[Byte]
+
+  /**
+   * The H.264 frame
+   */
+  case class Frame(data: Array[Byte]) extends AnyVal
+  // type Frame = Array[Byte]
 
   /**
    * The AMQP payload

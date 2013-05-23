@@ -14,11 +14,16 @@ import com.rabbitmq.client.AMQP
 
 // -- Everything else here is private to this package; it is not to be messed with outside. --
 
+private[recog] case object StreamEnd
+
 /**
  * Transaction state hierarchy
  */
 private[recog] sealed trait RecogSessionState
 private[recog] case object Idle extends RecogSessionState
+private[recog] case object WaitingForFirstInput extends RecogSessionState
+private[recog] case object WaitingForMoreFrames extends RecogSessionState
+private[recog] case object WaitingForFrameResult extends RecogSessionState
 private[recog] case object WaitingForMoreImages extends RecogSessionState
 private[recog] case object WaitingForImageResult extends RecogSessionState
 private[recog] case object Aborted extends RecogSessionState
@@ -99,11 +104,43 @@ class RecogSessionActor(connectionActor: ActorRef) extends Actor
 
   val amqp = ConnectionOwner.createChildActor(connectionActor, Props(new RpcClient()))
 
+  private def image(image: Image, session: ActiveSession, realSender: ActorRef): State = {
+    implicit val executionContext = context.dispatcher
+
+    amqpAsk[RecogResult](amqp)("amq.direct", "recog.key", mkImagePayload(image)) onComplete {
+      case Success(recogResult) => self ! SenderResult(realSender, recogResult)
+      case Failure(_) => self ! SenderResult(realSender, RecogResult(false))
+    }
+
+    goto(WaitingForImageResult)
+  }
+
+  private def frame(frame: Frame, session: ActiveSession, realSender: ActorRef): State = {
+    implicit val executionContext = context.dispatcher
+    print(".")
+    // TODO: process for real
+    goto(WaitingForMoreFrames)
+  }
+
   startWith(Idle, InactiveSession)
 
   when(Idle, StartTimeout) {
     case Event(configuration: SessionConfiguration, InactiveSession) =>
-      goto(WaitingForMoreImages) using ActiveSession(configuration, Nil)
+      goto(WaitingForFirstInput) using ActiveSession(configuration, Nil)
+  }
+
+  when(WaitingForFirstInput, StepTimeout) {
+    case Event(x: Image, session: ActiveSession) => image(x, session, sender)
+    case Event(x: Frame, session: ActiveSession) => frame(x, session, sender)
+  }
+
+  when(WaitingForMoreFrames, StepTimeout) {
+    case Event(x: Frame, session: ActiveSession) => frame(x, session, sender)
+    case Event(StreamEnd, _) => println("end"); goto(Completed)
+  }
+
+  when(WaitingForMoreImages, StepTimeout) {
+    case Event(x: Image, session: ActiveSession) => image(x, session, sender)
   }
 
   when(WaitingForImageResult, StepTimeout) {
@@ -121,24 +158,14 @@ class RecogSessionActor(connectionActor: ActorRef) extends Actor
       goto(WaitingForMoreImages) using session
   }
 
-  when(WaitingForMoreImages, StepTimeout) {
-    case Event(x: Image, session: ActiveSession) =>
-      val realSender = sender
-      implicit val executionContext = context.dispatcher
-
-      amqpAsk[RecogResult](amqp)("amq.direct", "recog.key", mkImagePayload(x)) onComplete {
-        case Success(recogResult) => self ! SenderResult(realSender, recogResult)
-        case Failure(_) => self ! SenderResult(realSender, RecogResult(false))
-      }
-
-      goto(WaitingForImageResult)
-  }
-
   def unhandled: StateFunction = {
     case Event(GetSession, session: ActiveSession) =>
       sender ! session
       stay()
     case Event(StateTimeout, _) =>
+      goto(Aborted)
+    case Event(x, _) =>
+      println("WTF??" + x)
       goto(Aborted)
   }
 
@@ -151,8 +178,7 @@ class RecogSessionActor(connectionActor: ActorRef) extends Actor
     case a -> b =>
       stateData match {
         case session: ActiveSession =>
-          println("** Saving " + session)
-          // Save to DB
+          // TODO: Save to DB
         case _ =>
       }
       f(a, b)

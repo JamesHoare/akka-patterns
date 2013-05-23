@@ -17,12 +17,12 @@ trait ImageEncoding {
   private final val One = writeBEInt32(0x00000001)
 
   private def singleImage(image: Image): AmqpPayload = {
-    val im: Array[Byte] = Array.ofDim(12 + image.length)
-    val size = writeBEInt32(image.length)
-    Array.copy(Face0007, 0, im, 0, 4)
-    Array.copy(One, 0,      im, 4, 4)
-    Array.copy(size, 0,     im, 8, 4)
-    Array.copy(image, 0,    im, 12, image.length)
+    val im: Array[Byte] = Array.ofDim(12 + image.data.length)
+    val size = writeBEInt32(image.data.length)
+    Array.copy(Face0007, 0,   im, 0, 4)
+    Array.copy(One, 0,        im, 4, 4)
+    Array.copy(size, 0,       im, 8, 4)
+    Array.copy(image.data, 0, im, 12, image.data.length)
 
     im
   }

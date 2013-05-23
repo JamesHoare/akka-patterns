@@ -13,6 +13,19 @@ import java.util.UUID
 case class ProcessImage(recogSessionId: RecogSessionId, image: Image)
 
 /**
+ * Submits the ``frame`` to the session identified by ``recogSessionId``
+ * @param recogSessionId the recognition session
+ * @param frame the H.264 (partial) frame
+ */
+case class ProcessFrame(recogSessionId: RecogSessionId, frame: Frame)
+
+/**
+ * Indicates that the stream has ended; there will be no more frames
+ * @param recogSessionId the recognition session
+ */
+case class ProcessStreamEnd(recogSessionId: RecogSessionId)
+
+/**
  * Begins the recognition session
  */
 case object Begin
@@ -41,16 +54,22 @@ class RecogCoordinatorActor(connectionActor: ActorRef) extends Actor {
   implicit val executionContext = context.dispatcher
 
   def receive = {
+    case FindActiveSessions =>
+      sender ! context.children.map(c => UUID.fromString(c.path.name)).toList
+
     case Begin =>
       val id = UUID.randomUUID()
       val instanceActor = context.actorOf(Props(new RecogSessionActor(connectionActor)), id.toString)
       instanceActor ! SessionConfiguration(FaceFeature :: Nil)
       sender ! id
-    case ProcessImage(id, image) =>
-      findInstanceActor(id).tell(image, sender)
     case KillActiveSession(id) =>
       findInstanceActor(id) ! Kill
-    case FindActiveSessions =>
-      sender ! context.children.map(c => UUID.fromString(c.path.name)).toList
+
+    case ProcessImage(id, image) =>
+      findInstanceActor(id).tell(image, sender)
+    case ProcessFrame(id, frame) =>
+      findInstanceActor(id).tell(frame, sender)
+    case ProcessStreamEnd(id) =>
+      findInstanceActor(id).tell(StreamEnd, sender)
   }
 }
