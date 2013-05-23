@@ -7,7 +7,6 @@ import org.eigengo.akkapatterns.core.recog._
 import org.apache.commons.codec.binary.Base64
 import spray.http._
 import concurrent.ExecutionContext
-import java.io.FileOutputStream
 import org.eigengo.akkapatterns.core.recog.RecogSessionRejected
 import org.eigengo.akkapatterns.core.recog.RecogSessionCompleted
 import org.eigengo.akkapatterns.core.recog.RecogSessionAccepted
@@ -35,6 +34,7 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
   }
 
   val route =
+    // begin a transaction
     path("recog") {
       post {
         complete {
@@ -42,6 +42,7 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
         }
       }
     } ~
+    // single image to /recog/static/:id
     path("recog/static" / JavaUUID) { sessionId =>
       post {
         image(sessionId)
@@ -53,7 +54,7 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
 class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with DefaultTimeout {
 
   def receive = {
-    // POST to /recog
+    // begin a transaction
     case HttpRequest(HttpMethods.POST, "/recog", _, _, _) =>
       val client = sender
       (coordinator ? Begin).map(_.toString).onComplete {
@@ -83,7 +84,7 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
 
     // all other requests
     case _ =>
-      sender ! HttpResponse(entity = "Do chunked post instead", status = StatusCodes.BadRequest)
+      sender ! HttpResponse(entity = "No such endpoint. That's all we know.", status = StatusCodes.NotFound)
   }
 
 }
