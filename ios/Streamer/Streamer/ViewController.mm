@@ -5,12 +5,14 @@
 #define FRAMES_PER_SECOND_MOD (25 / FRAMES_PER_SECOND)
 
 @implementation ViewController {
+	CVServerConnection *serverConnection;
+	CVServerTransactionConnection *serverTransactionConnection;
 	id<CVServerConnectionInput> frameInput;
+	
 	AVCaptureSession *captureSession;
 	AVCaptureVideoPreviewLayer *previewLayer;
 	int frameMod;
 	
-	NSURL *serverUrl;
 	bool capturing;
 }
 
@@ -19,7 +21,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	capturing = false;
-	serverUrl = [NSURL URLWithString:@"http://192.168.200.108:8088/recog/stream"];
+	NSURL *serverBaseUrl = [NSURL URLWithString:@"http://192.168.200.108:8088/recog"];
+	serverConnection = [CVServerConnection connection:serverBaseUrl];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -61,8 +64,9 @@
 	// start the capture session
 	[captureSession startRunning];
 	
-	// start the connection and grab the CVServerConnectionInput
-	frameInput = [[CVServerConnection connectionToStream:serverUrl withDelegate:self] startRunning];
+	// begin a transaction
+	serverTransactionConnection = [serverConnection begin:nil];
+	frameInput = [serverTransactionConnection streamInput:self];
 #endif
 }
 

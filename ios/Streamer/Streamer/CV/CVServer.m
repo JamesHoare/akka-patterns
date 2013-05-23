@@ -1,4 +1,4 @@
-#import "CVServerConnection.h"
+#import "CVServer.h"
 #import "BlockingQueueInputStream.h"
 #import "AFNetworking/AFHTTPRequestOperation.h"
 #import "AFNetworking/AFHTTPClient.h"
@@ -29,39 +29,62 @@ typedef enum {
 - (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data;
 @end
 
-
-@implementation CVServerConnection {
-	NSURL *url;
-	CVServerConnectionMode mode;
-	id<CVServerConnectionDelegate> delegate;
+@implementation CVServerTransactionConnection {
+	NSURL *baseUrl;
+	NSString *sessionId;
 }
 
-- (id)initWithUrl:(NSURL *)aUrl delegate:(id<CVServerConnectionDelegate>)aDelegate andMode:(CVServerConnectionMode)aMode {
+- (CVServerTransactionConnection*)initWithUrl:(NSURL*)aBaseUrl andSessionId:(NSString*)aSessionId {
 	self = [super init];
 	if (self) {
-		url = aUrl;
-		delegate = aDelegate;
-		mode = aMode;
+		baseUrl = aBaseUrl;
+		sessionId = aSessionId;
+	}
+	return self;
+}
+
+- (NSURL*)inputUrl:(NSString*)path {
+	NSString *pathWithSessionId = [NSString stringWithFormat:@"%@/%@", path, sessionId];
+	return [baseUrl URLByAppendingPathComponent:pathWithSessionId];
+}
+
+- (id<CVServerConnectionInput>)staticInput:(id<CVServerConnectionDelegate>)delegate {
+	return [[CVServerConnectionInputStatic alloc] initWithUrl:[self inputUrl:@"static"] andDelegate:delegate];
+}
+
+- (id<CVServerConnectionInput>)streamInput:(id<CVServerConnectionDelegate>)delegate {
+	return [[CVServerConnectionInputStream alloc] initWithUrl:[self inputUrl:@"stream"] andDelegate:delegate];
+}
+
+@end
+
+@implementation CVServerConnection {
+	NSURL *baseUrl;
+	CVServerConnectionMode mode;
+}
+
+- (id)initWithUrl:(NSURL *)aBaseUrl {
+	self = [super init];
+	if (self) {
+		baseUrl = aBaseUrl;
 	}
 	
 	return self;
 }
 
-+ (CVServerConnection*)connectionToStatic:(NSURL *)url withDelegate:(id<CVServerConnectionDelegate>)delegate {
-	return [[CVServerConnection alloc] initWithUrl:url delegate:delegate andMode:kCVServerConnecitonStatic];
++ (CVServerConnection*)connection:(NSURL *)baseUrl {
+	return [[CVServerConnection alloc] initWithUrl:baseUrl];
 }
 
-+ (CVServerConnection*)connectionToStream:(NSURL *)url withDelegate:(id<CVServerConnectionDelegate>)delegate {
-	return [[CVServerConnection alloc] initWithUrl:url delegate:delegate andMode:kCVServerConnecitonStream];
-}
-
-- (id<CVServerConnectionInput>)startRunning {
-	switch (mode) {
-		case kCVServerConnecitonStatic:
-			return [[CVServerConnectionInputStatic alloc] initWithUrl:url andDelegate:delegate];
-		case kCVServerConnecitonStream:
-			return [[CVServerConnectionInputStream alloc] initWithUrl:url andDelegate:delegate];
-	}
+- (CVServerTransactionConnection*)begin:(id)configuration {
+	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:baseUrl];
+	[request setTimeoutInterval:30.0];
+	[request setHTTPMethod:@"POST"];
+	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+	[operation start];
+	[operation waitUntilFinished];
+	NSString* sessionId = [operation responseString];
+	return [[CVServerTransactionConnection alloc] initWithUrl:baseUrl andSessionId:sessionId];
 }
 
 @end

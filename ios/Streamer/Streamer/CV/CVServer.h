@@ -43,6 +43,23 @@
 @end
 
 /**
+ * Connects to the running transaction on the CV server
+ */
+@interface CVServerTransactionConnection : NSObject
+
+  /**
+   * Obtains the ``CVServerConnectionInput`` that expects one frame at a time.
+   */
+- (id<CVServerConnectionInput>)staticInput:(id<CVServerConnectionDelegate>)delegate;
+
+  /**
+   * Obtains the ``CVServerConnectionInput`` that expects stream of frames.
+   */
+- (id<CVServerConnectionInput>)streamInput:(id<CVServerConnectionDelegate>)delegate;
+
+@end
+
+/**
  * Maintains the connection to the CVServer at some URL; and constructs objects that allow you to submit frames to the
  * server and reports the outcome of the processing that the server performed.
  *
@@ -53,14 +70,21 @@
  *
  * @implementation X {
  *   AVCaptureSession* captureSession;
+ *   CVServerConnection *connection;
+ *   CVServerTransactionConnection *transactionConnection;
  *   id<CVServerConnectionDelegate> input;
+ * }
+ *
+ * - (void)initialize {
+ *   connection = [CVServerConnection connect:serverUrl];
  * }
  *
  * #pragma mark - AV Capture start and stop
  *
  * // when the user decides to start capturing
  * - (void)startCapture {
- *   input = [[CVServerConnection connectionToStream:serverUrl withDelegate:delegate] startRunning];
+ *   transactionConnection = [connection begin];
+ *   input = [transactionConnection streamInput:self];
  *   // start capture session; connecting some AVVideoOutput* to self (implementing AVCaptureVideoDataOutputSampleBufferDelegate) on some queue
  *   captureSession = [[AVCaptureSession alloc] init];
  *   AVVideoOutput *videoOutput = ...
@@ -108,20 +132,17 @@
  * ```
  */
 @interface CVServerConnection : NSObject
+
   /**
-   * Constructs ``CVServerConnection`` that sends H.264 stream to the server at ``url``, informing the ``delegate`` of the
-   * ultimate results.
+   * Creates the connection to the CV server at the given URL.
    */
-+ (CVServerConnection*)connectionToStream:(NSURL*)url withDelegate:(id<CVServerConnectionDelegate>)delegate;
++ (CVServerConnection*)connection:(NSURL*)baseUrl;
+
   /**
-   * Constructs ``CVServerConnection`` that sends JPEG images to the server at ``url``, informing the ``delegate`` of the
-   * ultimate results.
+   * Begins a new transaction and returns a connection to that transaction
    */
-+ (CVServerConnection*)connectionToStatic:(NSURL*)url withDelegate:(id<CVServerConnectionDelegate>)delegate;
-  /**
-   * Obtains the input that allows you to submit the frames. Depending on the way in which you constructed this object,
-   * the ``delegate`` will receive response after the frame (static) or after you call the returned object's ``-close`` 
-   * method (stream).
-   */
-- (id<CVServerConnectionInput>)startRunning;
+- (CVServerTransactionConnection*)begin:(id)configuration;
+
 @end
+
+
