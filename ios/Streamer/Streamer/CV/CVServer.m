@@ -4,11 +4,6 @@
 #import "AFNetworking/AFHTTPClient.h"
 #import "i264Encoder.h"
 
-typedef enum {
-	kCVServerConnecitonStatic,
-	kCVServerConnecitonStream
-} CVServerConnectionMode;
-
 @interface AbstractCVServerConnectionInput : NSObject {
 @protected
 	NSURL *url;
@@ -61,7 +56,6 @@ typedef enum {
 
 @implementation CVServerConnection {
 	NSURL *baseUrl;
-	CVServerConnectionMode mode;
 }
 
 - (id)initWithUrl:(NSURL *)aBaseUrl {
@@ -118,6 +112,7 @@ typedef enum {
 @implementation CVServerConnectionInputStatic
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
+	// TODO: encode the image into JPEG
 	NSData* data = [@"FU" dataUsingEncoding:NSUTF8StringEncoding];
 	
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];

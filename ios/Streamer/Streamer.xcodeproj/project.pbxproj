@@ -20,6 +20,7 @@
 		541E79C2174CD72F00AD248A /* CVServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79B6174CD72F00AD248A /* CVServer.m */; };
 		541E79C5174CD76300AD248A /* CVDocumentPreflight.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79C4174CD76300AD248A /* CVDocumentPreflight.m */; };
 		5468FF6E174A1C64002210B8 /* i264Encoder.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5468FF6D174A1C64002210B8 /* i264Encoder.a */; };
+		54AC06B6174EA54B0031E2F2 /* ImageEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */; };
 		54F8702617462320006F6C0F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702517462320006F6C0F /* UIKit.framework */; };
 		54F8702817462320006F6C0F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702717462320006F6C0F /* Foundation.framework */; };
 		54F8702A17462320006F6C0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702917462320006F6C0F /* CoreGraphics.framework */; };
@@ -59,12 +60,14 @@
 		541E79B2174CD72F00AD248A /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
 		541E79B3174CD72F00AD248A /* BlockingQueueInputStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockingQueueInputStream.h; sourceTree = "<group>"; };
 		541E79B4174CD72F00AD248A /* BlockingQueueInputStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlockingQueueInputStream.m; sourceTree = "<group>"; };
-		541E79B5174CD72F00AD248A /* CVServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVServer.h; sourceTree = "<group>"; };
+		541E79B5174CD72F00AD248A /* CVServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVServer.h; sourceTree = "<group>"; wrapsLines = 0; };
 		541E79B6174CD72F00AD248A /* CVServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CVServer.m; sourceTree = "<group>"; };
-		541E79B7174CD72F00AD248A /* i264Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = i264Encoder.h; sourceTree = "<group>"; };
+		541E79B7174CD72F00AD248A /* i264Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = i264Encoder.h; sourceTree = "<group>"; wrapsLines = 0; };
 		541E79C3174CD76300AD248A /* CVDocumentPreflight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CVDocumentPreflight.h; sourceTree = "<group>"; };
 		541E79C4174CD76300AD248A /* CVDocumentPreflight.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CVDocumentPreflight.m; sourceTree = "<group>"; };
 		5468FF6D174A1C64002210B8 /* i264Encoder.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = i264Encoder.a; path = Streamer/i264Encoder.a; sourceTree = "<group>"; };
+		54AC06B4174EA54B0031E2F2 /* ImageEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageEncoder.h; sourceTree = "<group>"; };
+		54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageEncoder.m; sourceTree = "<group>"; };
 		54F8702217462320006F6C0F /* Streamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Streamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54F8702517462320006F6C0F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		54F8702717462320006F6C0F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -118,6 +121,8 @@
 				541E79B7174CD72F00AD248A /* i264Encoder.h */,
 				541E79C3174CD76300AD248A /* CVDocumentPreflight.h */,
 				541E79C4174CD76300AD248A /* CVDocumentPreflight.m */,
+				54AC06B4174EA54B0031E2F2 /* ImageEncoder.h */,
+				54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */,
 			);
 			path = CV;
 			sourceTree = "<group>";
@@ -290,6 +295,7 @@
 				541E79C1174CD72F00AD248A /* BlockingQueueInputStream.m in Sources */,
 				541E79C2174CD72F00AD248A /* CVServer.m in Sources */,
 				541E79C5174CD76300AD248A /* CVDocumentPreflight.m in Sources */,
+				54AC06B6174EA54B0031E2F2 /* ImageEncoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

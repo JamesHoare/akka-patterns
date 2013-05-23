@@ -13,5 +13,5 @@ typedef struct {
 } CVDocumentPreflightResult;
 
 @interface CVDocumentPreflight : NSObject
-- (CVDocumentPreflightResult)preflight:(CMSampleBufferRef)frame;
+- (CVDocumentPreflightResult)preflight:(CGImageRef)frame;
 @end

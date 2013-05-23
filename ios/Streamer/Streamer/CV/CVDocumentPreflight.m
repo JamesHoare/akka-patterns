@@ -2,7 +2,7 @@
 
 @implementation CVDocumentPreflight
 
-- (CVDocumentPreflightResult)preflight:(CMSampleBufferRef)frame {
+- (CVDocumentPreflightResult)preflight:(CGImageRef)frame {
 	CVDocumentPreflightResult result;
 	
 	
