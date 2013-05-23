@@ -51,7 +51,6 @@ class RecogService(coordinator: ActorRef, origin: String)(implicit executionCont
 }
 
 class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit executionContext: ExecutionContext) extends Actor with DefaultTimeout {
-//  var os: FileOutputStream = _
 
   def receive = {
     // POST to /recog
@@ -66,9 +65,6 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
     case ChunkedRequestStart(HttpRequest(HttpMethods.POST, uri, _, entity, _)) if uri startsWith "/recog/stream/" =>
       val sessionId = UUID.fromString(uri.substring(14))
       coordinator ! ProcessFrame(sessionId, Frame(entity.buffer))
-
-//      print("start" + entity.asString)
-//      os = new FileOutputStream("/Users/janmachacek/" + sessionId + ".mov")
     case MessageChunk(body, extensions) =>
       // parse the body
       val frame = Array.ofDim[Byte](body.length - 36)
@@ -78,11 +74,7 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
 
       if (body.length > 0) coordinator ! ProcessFrame(sessionIdUUID, Frame(frame))
       else                 coordinator ! ProcessStreamEnd(sessionIdUUID)
-
-//      print(body.length)
-//      os.write(body)
     case ChunkedMessageEnd(extensions, trailer) =>
-//      os.close()
       sender ! HttpResponse(entity = "{}")
 
     // POST to /recog/static/:id
