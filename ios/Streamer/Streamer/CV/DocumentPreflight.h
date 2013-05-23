@@ -10,8 +10,8 @@ typedef struct {
 	bool face;
 	
 	bool focus;
-} CVDocumentPreflightResult;
+} DocumentPreflightResult;
 
-@interface CVDocumentPreflight : NSObject
-- (CVDocumentPreflightResult)preflight:(CGImageRef)frame;
+@interface DocumentPreflight : NSObject
+- (DocumentPreflightResult)preflight:(CGImageRef)frame;
 @end

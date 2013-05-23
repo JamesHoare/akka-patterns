@@ -3,6 +3,7 @@
 #import "AFNetworking/AFHTTPRequestOperation.h"
 #import "AFNetworking/AFHTTPClient.h"
 #import "i264Encoder.h"
+#import "ImageEncoder.h"
 
 @interface AbstractCVServerConnectionInput : NSObject {
 @protected
@@ -109,25 +110,31 @@
 /**
  * Uses plain JPEG encoding to submit the images from the incoming stream of frames
  */
-@implementation CVServerConnectionInputStatic
+@implementation CVServerConnectionInputStatic {
+	ImageEncoder *imageEncoder;
+	
+}
+
+- (void)initConnectionInput {
+	imageEncoder = [[ImageEncoder alloc] init];
+}
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
-	// TODO: encode the image into JPEG
-	NSData* data = [@"FU" dataUsingEncoding:NSUTF8StringEncoding];
-	
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-	[request setTimeoutInterval:30.0];
-	[request setHTTPMethod:@"POST"];
-	[request setHTTPBody:data];
-	[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
-	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-		[delegate cvServerConnectionOk:responseObject];
-	} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-		[delegate cvServerConnectionFailed:error];
+	[imageEncoder encode:frame withSuccess:^(NSData* data) {
+		NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+		[request setTimeoutInterval:30.0];
+		[request setHTTPMethod:@"POST"];
+		[request setHTTPBody:data];
+		[request addValue:@"application/octet-stream" forHTTPHeaderField:@"Content-Type"];
+		AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+		[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+			[delegate cvServerConnectionOk:responseObject];
+		} failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+			[delegate cvServerConnectionFailed:error];
+		}];
+		[operation start];
+		[operation waitUntilFinished];
 	}];
-	[operation start];
-	[operation waitUntilFinished];
 }
 
 - (void)stopRunning {
