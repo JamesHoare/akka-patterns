@@ -11,6 +11,7 @@ import com.github.sstone.amqp.Amqp.{Delivery, Publish}
 import util.{Failure, Success}
 import java.util.UUID
 import com.rabbitmq.client.AMQP
+import java.io.{FileOutputStream, OutputStream}
 
 // -- Everything else here is private to this package; it is not to be messed with outside. --
 
@@ -33,7 +34,8 @@ private[recog] case object Completed extends RecogSessionState
 private[recog] sealed trait RecogSessionData
 private[recog] case object InactiveSession extends RecogSessionData
 private[recog] case class ActiveSession(configuration: SessionConfiguration,
-                                        acceptedFeatures: List[Feature]) extends RecogSessionData {
+                                        acceptedFeatures: List[Feature],
+                                        receivedStream: Option[QueueArray]) extends RecogSessionData {
 
   /**
    * Computes the feature that should appear in the next image
@@ -99,6 +101,8 @@ private[recog] trait AmqpOperations extends DefaultTimeout {
 class RecogSessionActor(connectionActor: ActorRef) extends Actor
   with FSM[RecogSessionState, RecogSessionData] with AmqpOperations with RecogFormats with ImageEncoding {
 
+  var os: OutputStream = new FileOutputStream("/Users/janmachacek/foo.mp4")
+
   private val StartTimeout = FiniteDuration(20, scala.concurrent.duration.SECONDS)
   private val StepTimeout = FiniteDuration(300, scala.concurrent.duration.SECONDS)
 
@@ -118,6 +122,10 @@ class RecogSessionActor(connectionActor: ActorRef) extends Actor
   private def frame(frame: Frame, session: ActiveSession, realSender: ActorRef): State = {
     implicit val executionContext = context.dispatcher
     print(".")
+
+    os.write(frame.data)
+    os.flush()
+
     // TODO: process for real
     goto(WaitingForMoreFrames)
   }
@@ -126,7 +134,7 @@ class RecogSessionActor(connectionActor: ActorRef) extends Actor
 
   when(Idle, StartTimeout) {
     case Event(configuration: SessionConfiguration, InactiveSession) =>
-      goto(WaitingForFirstInput) using ActiveSession(configuration, Nil)
+      goto(WaitingForFirstInput) using ActiveSession(configuration, Nil, None)
   }
 
   when(WaitingForFirstInput, StepTimeout) {

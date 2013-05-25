@@ -90,13 +90,13 @@ object PatternsBuild extends Build {
     libraryDependencies += scalaz_effect,
     libraryDependencies += jasperreports,
     libraryDependencies += poi,
+    libraryDependencies += xuggle,
     libraryDependencies += smack,
     libraryDependencies += smackx
   )
 
   lazy val api = module("api") dependsOn(core, test % "test") settings(
     libraryDependencies += spray_routing,
-    libraryDependencies += xuggle,
     libraryDependencies += spray_testkit % "test"
   )
 
