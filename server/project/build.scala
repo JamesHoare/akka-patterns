@@ -49,7 +49,8 @@ object PatternsBuild extends Build {
       Resolver.typesafeRepo("snapshots"),
       Resolver.sonatypeRepo("snapshots"),
       "Video Gorillas" at "http://videogorillas.com/m2/public",
-      "Jasper Community" at "http://jasperreports.sourceforge.net/maven2"
+      "Jasper Community" at "http://jasperreports.sourceforge.net/maven2",
+      "Xugggler" at "http://xuggle.googlecode.com/svn/trunk/repo/share/java/"
       // resolvers += "neo4j repo" at "http://m2.neo4j.org/content/repositories/releases/"  
     ),
     parallelExecution in Test := false
@@ -95,7 +96,7 @@ object PatternsBuild extends Build {
 
   lazy val api = module("api") dependsOn(core, test % "test") settings(
     libraryDependencies += spray_routing,
-    libraryDependencies += jcodec,
+    libraryDependencies += xuggle,
     libraryDependencies += spray_testkit % "test"
   )
 
@@ -150,7 +151,8 @@ object Dependencies {
   val mail = "javax.mail" % "mail" % "1.4.2"
   val scala_io_core = "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.2"
   val scala_io_file = "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.2"
-  val jcodec = "org.jcodec" % "jcodec" % "0.1.3"
+  val xuggle = "xuggle" % "xuggle-xuggler" % "5.2"
+  //val jcodec = "org.jcodec" % "jcodec" % "0.1.3"
   val smack =  "org.igniterealtime.smack" % "smack" % "3.2.1"
   val smackx =  "org.igniterealtime.smack" % "smackx" % "3.2.1"
 }

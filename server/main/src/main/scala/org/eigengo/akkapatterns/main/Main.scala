@@ -7,7 +7,6 @@ import org.eigengo.akkapatterns.web.Web
 import org.eigengo.akkapatterns.api.Api
 import akka.util.Timeout
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
-import org.jcodec.api.FrameGrab
 import java.io.File
 import javax.imageio.ImageIO
 
