@@ -1,13 +1,8 @@
 #import "H264Encoder.h"
 #import <AVFoundation/AVFoundation.h>
 
-@interface H264EncoderStreamDelegate : NSObject<NSStreamDelegate>
-- (id)initWithEncoder:(H264Encoder*)encoder andDelegate:(id<H264EncoderDelegate>)delegate;
-- (void)stream:(NSStream *)theStream handleEvent:(NSStreamEvent)streamEvent;
-@end
-
 @implementation H264Encoder {
-	H264EncoderStreamDelegate *delegate;
+	id<H264EncoderDelegate> delegate;
 	
 	AVAssetWriter* assetWriter;
 	AVAssetWriterInput *assetWriterVideoIn;
@@ -17,13 +12,13 @@
 	bool recording;
 	
 	NSURL *videoFileUrl;
-	NSInputStream *videoFileStream;
+	NSFileHandle *videoFileHandle;
 }
 
 - (H264Encoder*)initWithDelegate:(id<H264EncoderDelegate>)aDelegate {
 	self = [super init];
 	if (self) {
-		delegate = [[H264EncoderStreamDelegate alloc] initWithEncoder:self andDelegate:aDelegate];
+		delegate = aDelegate;
 		recording = false;
 		
 		self.width = 1080;
@@ -86,6 +81,20 @@
     return true;
 }
 
+#pragma mark - File handling
+- (void)readFromVideoFile {
+	NSData *data = [videoFileHandle availableData];
+/*
+	uint8_t buffer[16384];
+	unsigned int len;
+	NSMutableData *data = [[NSMutableData alloc] initWithCapacity:16384];
+	while ((len = [videoFileStream read:buffer maxLength:16384]) > 0) {
+		[data appendBytes:buffer length:len];
+	}
+*/
+	if ([data length] > 0) [delegate h264EncoderOnFrame:self completedFrameData:data];
+}
+
 #pragma mark - Encoder usage
 
 - (bool)startEncoder {
@@ -104,11 +113,11 @@
 		[assetWriter finishWritingWithCompletionHandler:^() {
 			recording = false;
 			
-			if (videoFileStream != nil) [videoFileStream close];
+			if (videoFileHandle	!= nil) [videoFileHandle closeFile];
 			
 			assetWriter = nil;
 			assetWriterVideoIn = nil;
-			videoFileStream = nil;
+			videoFileHandle = nil;
 		}];
 	});
 	return true;
@@ -118,10 +127,8 @@
 	if (assetWriter.status == AVAssetWriterStatusUnknown) {
         if ([assetWriter startWriting]) {
 			[assetWriter startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
-			videoFileStream = [NSInputStream inputStreamWithURL:videoFileUrl];
-			videoFileStream.delegate = delegate;
-			[videoFileStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-			[videoFileStream open];
+			NSError *error;
+			videoFileHandle = [NSFileHandle fileHandleForReadingFromURL:videoFileUrl error:&error];
 		} else {
 			NSLog(@"%@", [assetWriter error]);
 			return false;
@@ -130,9 +137,12 @@
 	
 	if (assetWriter.status == AVAssetWriterStatusWriting) {
 		if (assetWriterVideoIn.readyForMoreMediaData) {
+//			
 //			NSError *error;
 //			NSDictionary* attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[videoFileUrl path] error:&error];
-//			NSLog(@"Size %@", [attrs valueForKey:NSFileSize]);			
+//			NSLog(@"Size %@", [attrs valueForKey:NSFileSize]);
+//			
+			[self readFromVideoFile];
 			if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
 				NSLog(@"%@", [assetWriter error]);
 				return false;
@@ -140,49 +150,6 @@
 		}
 	}
 	return true;
-}
-
-@end
-
-#pragma mark - Stream delegation
-@implementation H264EncoderStreamDelegate {
-	id<H264EncoderDelegate> delegate;
-	H264Encoder* encoder;
-}
-
-- (id)initWithEncoder:(H264Encoder*)aEncoder andDelegate:(id<H264EncoderDelegate>)aDelegate {
-	self = [super init];
-	if (self) {
-		delegate = aDelegate;
-		encoder = aEncoder;
-	}
-	return self;
-}
-
-- (void)stream:(NSStream *)theStream handleEvent:(NSStreamEvent)streamEvent {
-	NSInputStream *stream = (NSInputStream*)theStream;
-	switch (streamEvent) {
-		case NSStreamEventHasBytesAvailable: {
-			NSMutableData* data = [[NSMutableData alloc] init];
-            uint8_t buf[16384];
-            unsigned int len = 0;
-            len = [(NSInputStream *)stream read:buf maxLength:16384];
-            if (len > 0) {
-                [data appendBytes:(const void *)buf length:len];
-            } else {
-                NSLog(@"no buffer!");
-            }
-			NSLog(@"Read %d", [data length]);
-			[delegate h264EncoderOnFrame:encoder completedFrameData:data];
-			break;
-		}
-		case NSStreamEventEndEncountered:
-			[stream close];
-			[stream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-			break;
-		default:
-			NSLog(@"Something else");
-	}
 }
 
 @end
