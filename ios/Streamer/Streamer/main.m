@@ -1,11 +1,3 @@
-//
-//  main.m
-//  Streamer
-//
-//  Created by Jan Machacek on 17/05/2013.
-//  Copyright (c) 2013 Eigengo. All rights reserved.
-//
-
 #import <UIKit/UIKit.h>
 
 #import "AppDelegate.h"

@@ -21,6 +21,7 @@
 		541E79C5174CD76300AD248A /* DocumentPreflight.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79C4174CD76300AD248A /* DocumentPreflight.m */; };
 		548BAC7C175277CA006BC2D7 /* H264Encoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 548BAC7B175277CA006BC2D7 /* H264Encoder.m */; };
 		54AC06B6174EA54B0031E2F2 /* ImageEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */; };
+		54B38AA51752AE4D00A4D17F /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8704A17462702006F6C0F /* CoreImage.framework */; };
 		54F8702617462320006F6C0F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702517462320006F6C0F /* UIKit.framework */; };
 		54F8702817462320006F6C0F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702717462320006F6C0F /* Foundation.framework */; };
 		54F8702A17462320006F6C0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702917462320006F6C0F /* CoreGraphics.framework */; };
@@ -96,6 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54B38AA51752AE4D00A4D17F /* CoreImage.framework in Frameworks */,
 				54F87051174627A8006F6C0F /* QuartzCore.framework in Frameworks */,
 				54F8704F17462753006F6C0F /* CoreMedia.framework in Frameworks */,
 				54F8704D17462711006F6C0F /* CoreVideo.framework in Frameworks */,
