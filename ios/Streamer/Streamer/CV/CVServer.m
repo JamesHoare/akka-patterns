@@ -172,14 +172,14 @@
 	encoder.width = 720;
 	encoder.frameRate = framesPerSecond;
 	encoder.keyFrameInterval = framesPerSecond * 5;
+	encoder.bitsPerSecond = 300000;
 	[encoder startEncoder];
 #endif
 }
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
 #if !(TARGET_IPHONE_SIMULATOR)
-//	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(frame);
-	[encoder encodePixelBuffer:frame];
+	[encoder encodeSampleBuffer:frame];
 #endif
 }
 

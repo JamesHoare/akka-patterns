@@ -14,13 +14,13 @@
 - (H264Encoder*)initWithDelegate:(id<H264EncoderDelegate>)delegate;
 - (bool)startEncoder;
 - (bool)stopEncoder;
-- (bool)encodePixelBuffer:(CMSampleBufferRef)sampleBuffer;
+- (bool)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer;
 
 @property int frameRate;
 @property int keyFrameInterval;
 @property int height;
 @property int width;
-@property int bitRate;
+@property int bitsPerSecond;
 
 @end
 
