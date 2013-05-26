@@ -103,24 +103,20 @@
 #pragma mark - Encoder usage
 
 - (CMSampleBufferRef)emptyFrame {
-	CGRect cropRect = CGRectMake(0, 0, self.width, self.height);
+	CVPixelBufferRef pixelBuffer = NULL;
 	
-	CIImage *ciImage = [CIImage imageWithColor:[CIColor colorWithRed:0 green:0 blue:0]];
-	ciImage = [ciImage imageByCroppingToRect:cropRect];
-	
-	CVPixelBufferRef pixelBuffer;
-	CVPixelBufferCreate(kCFAllocatorSystemDefault, self.width, self.height, kCVPixelFormatType_32BGRA, NULL, &pixelBuffer);
-	
-	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-	
-	CIContext * ciContext = [CIContext contextWithOptions: nil];
-	[ciContext render:ciImage toCVPixelBuffer:pixelBuffer];
-	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+                             [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
+                             [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
+                             nil];
+    CVPixelBufferCreate(kCFAllocatorDefault, self.width, self.height,
+                        kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
+                        &pixelBuffer);
 	
 	CMSampleTimingInfo sampleTime = {
-		.duration = 10,
-		.presentationTimeStamp = 0,
-		.decodeTimeStamp = 0
+		.duration = CMTimeMake(10, 1),
+		.presentationTimeStamp = CMTimeMake(0, 1),
+		.decodeTimeStamp = CMTimeMake(0, 1),
 	};
 	
 	CMVideoFormatDescriptionRef videoInfo = NULL;
@@ -165,19 +161,20 @@
 	// write the header with one frame
 	if (![self initializeVideoWriter:true]) return false;
 
-	AVAssetWriterInputPixelBufferAdaptor *pixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:nil];
-	CVPixelBufferRef pxbuffer = NULL;
-	
-	NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-                             [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
-                             [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
-                             nil];
-    CVPixelBufferCreate(kCFAllocatorDefault, self.width, self.height,
-                        kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
-                        &pxbuffer);
+//	AVAssetWriterInputPixelBufferAdaptor *pixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:nil];
+//	CVPixelBufferRef pxbuffer = NULL;
+//	
+//	NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+//                             [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
+//                             [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
+//                             nil];
+//    CVPixelBufferCreate(kCFAllocatorDefault, self.width, self.height,
+//                        kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
+//                        &pxbuffer);
 
 	[self startVideoWriter];
-	for (int i = 0; i < 100; i++) [pixelBufferAdaptor appendPixelBuffer:pxbuffer withPresentationTime:CMTimeMake(i, 10)];
+	//for (int i = 0; i < 100; i++) [pixelBufferAdaptor appendPixelBuffer:pxbuffer withPresentationTime:CMTimeMake(i, 10)];
+	[self encodeSampleBuffer:[self emptyFrame]];
 	[self stopVideoWriter];
 	[self readFromVideoFile];
 	
