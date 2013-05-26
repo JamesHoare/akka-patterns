@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <CoreMedia/CoreMedia.h>
 
 @class H264Encoder;
 
@@ -11,9 +12,9 @@
 @interface H264Encoder : NSObject
 
 - (H264Encoder*)initWithDelegate:(id<H264EncoderDelegate>)delegate;
-- (BOOL)startEncoder;
-- (BOOL)stopEncoder;
-- (BOOL)encodePixelBuffer:(CVPixelBufferRef)pixelBuffer;
+- (bool)startEncoder;
+- (bool)stopEncoder;
+- (bool)encodePixelBuffer:(CMSampleBufferRef)sampleBuffer;
 
 @property int frameRate;
 @property int keyFrameInterval;

@@ -8,6 +8,9 @@
 	AVAssetWriterInput *assetWriterVideoIn;
 	
 	dispatch_queue_t videoWritingQueue;
+	
+	bool recording;
+	
 	NSURL *tempVideoFile;
 }
 
@@ -15,6 +18,7 @@
 	self = [super init];
 	if (self) {
 		delegate = aDelegate;
+		recording = false;
 		
 		self.width = 1080;
 		self.height = 720;
@@ -25,15 +29,14 @@
 
 #pragma mark - AVAssetWriter setup
 
-- (BOOL)setupAssetWriter {
+- (bool)initializeVideoWriter {
 	NSError *error;
 	
 	// setup up temporary file
-	NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"temp.mp4"];
-	tempVideoFile = [NSURL URLWithString:filePath];
+	tempVideoFile = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%@", NSTemporaryDirectory(), @"temp.mp4"]];
 	// remove the temp file
 	[[NSFileManager defaultManager] removeItemAtURL:tempVideoFile error:&error];
-
+	
 	// setup the writer
 	assetWriter = [[AVAssetWriter alloc] initWithURL:tempVideoFile fileType:AVFileTypeMPEG4 error:&error];
 
@@ -68,32 +71,65 @@
 			[assetWriter addInput:assetWriterVideoIn];
 		else {
 			NSLog(@"Couldn't add asset writer video input.");
-            return NO;
+            return false;
 		}
 	}
 	else {
 		NSLog(@"Couldn't apply video output settings.");
-        return NO;
+        return false;
 	}
     
-    return YES;
+    return true;
 }
 
 
 #pragma mark - Encoder usage
 
-- (BOOL)startEncoder {
-	[self setupAssetWriter];
-	return YES;
+- (bool)startEncoder {
+	videoWritingQueue = dispatch_queue_create("VideoEncodingQueue", NULL);
+	dispatch_async(videoWritingQueue, ^{
+		if (![self initializeVideoWriter]) return;
+		if (recording) return;
+	});
+	return true;
 }
 
-- (BOOL)stopEncoder {
-	[assetWriter finishWritingWithCompletionHandler:^() {}];
-	return YES;
+- (bool)stopEncoder {
+	dispatch_async(videoWritingQueue, ^{
+		if (!recording) return;
+		
+		[assetWriter finishWritingWithCompletionHandler:^() {
+			assetWriter = nil;
+			
+			recording = false;
+		}];
+	});
+	return true;
 }
 
-- (BOOL)encodePixelBuffer:(CVPixelBufferRef)pixelBuffer {
-	return YES;
+- (bool)encodePixelBuffer:(CMSampleBufferRef)sampleBuffer {
+	if (assetWriter.status == AVAssetWriterStatusUnknown) {
+        if ([assetWriter startWriting]) {
+			[assetWriter startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
+		} else {
+			NSLog(@"%@", [assetWriter error]);
+			return false;
+		}
+	}
+	
+	if (assetWriter.status == AVAssetWriterStatusWriting) {
+		if (assetWriterVideoIn.readyForMoreMediaData) {
+			//[assetWriter finishWritingWithCompletionHandler:^() {}];
+			NSError *error;
+			NSDictionary* attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[tempVideoFile path] error:&error];
+			NSLog(@"Size %@", [attrs valueForKey:NSFileSize]);
+			if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
+				NSLog(@"%@", [assetWriter error]);
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 @end

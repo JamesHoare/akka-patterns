@@ -178,8 +178,8 @@
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
 #if !(TARGET_IPHONE_SIMULATOR)
-	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(frame);
-	[encoder encodePixelBuffer:pixelBuffer];
+//	CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(frame);
+	[encoder encodePixelBuffer:frame];
 #endif
 }
 
