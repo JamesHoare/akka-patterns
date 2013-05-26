@@ -2,7 +2,7 @@
 #import "BlockingQueueInputStream.h"
 #import "AFNetworking/AFHTTPRequestOperation.h"
 #import "AFNetworking/AFHTTPClient.h"
-#import "i264Encoder.h"
+#import "H264Encoder.h"
 #import "ImageEncoder.h"
 
 @interface AbstractCVServerConnectionInput : NSObject {
@@ -18,12 +18,11 @@
 @interface CVServerConnectionInputStatic : AbstractCVServerConnectionInput<CVServerConnectionInput>
 @end
 
-@interface CVServerConnectionInputStream : AbstractCVServerConnectionInput<CVServerConnectionInput> {
+@interface CVServerConnectionInputStream : AbstractCVServerConnectionInput<CVServerConnectionInput, H264EncoderDelegate> {
 #if !(TARGET_IPHONE_SIMULATOR)
-	i264Encoder* encoder;
+	H264Encoder* encoder;
 #endif
 }
-- (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data;
 @end
 
 @implementation CVServerTransactionConnection {
@@ -168,13 +167,11 @@
 	
 #if !(TARGET_IPHONE_SIMULATOR)
 	int framesPerSecond = 25;
-	encoder = [[i264Encoder alloc] initWithDelegate:self];
-	[encoder setInPicHeight:[NSNumber numberWithInt:480]];
-	[encoder setInPicWidth:[NSNumber numberWithInt:720]];
-	[encoder setFrameRate:[NSNumber numberWithInt:framesPerSecond]];
-	[encoder setKeyFrameInterval:[NSNumber numberWithInt:framesPerSecond * 5]];
-	[encoder setAvgDataRate:[NSNumber numberWithInt:100000]];
-	[encoder setBitRate:[NSNumber numberWithInt:100000]];
+	encoder = [[H264Encoder alloc] initWithDelegate:self];
+	encoder.height = 480;
+	encoder.width = 720;
+	encoder.frameRate = framesPerSecond;
+	encoder.keyFrameInterval = framesPerSecond * 5;
 	[encoder startEncoder];
 #endif
 }
@@ -186,11 +183,11 @@
 #endif
 }
 
-- (void)oni264Encoder:(i264Encoder *)encoder completedFrameData:(NSData *)data {
+- (void)h264EncoderOnFrame:(H264Encoder *)encoder completedFrameData:(NSData *)frame {
 	NSData* sessionIdData = [sessionId dataUsingEncoding:NSASCIIStringEncoding];
-	NSMutableData *frame = [NSMutableData dataWithData:sessionIdData];
-	[frame appendData:data];
-	[stream appendData:frame];
+	NSMutableData *frameWithSessionId = [NSMutableData dataWithData:sessionIdData];
+	[frameWithSessionId appendData:frame];
+	[stream appendData:frameWithSessionId];
 }
 
 - (void)stopRunning {
