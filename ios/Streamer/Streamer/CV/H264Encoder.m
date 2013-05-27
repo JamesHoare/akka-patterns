@@ -174,6 +174,8 @@
 	// write the header with one frame
 	if (![self initializeVideoWriter:true]) return false;
 
+	// wantSPSAndPPSData
+	
 	bytesToDrop = 0;
 	videoFileSize = 0;
 	[self startVideoWriter];
@@ -193,15 +195,13 @@
 }
 
 - (bool)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-	frameNumber++;
-//	[self encodeEmptyFrame];
-//	[self readFromVideoFile];	
 	if (assetWriter.status == AVAssetWriterStatusWriting) {
 		if (assetWriterVideoIn.readyForMoreMediaData) {
 			if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
 				NSLog(@"%@", [assetWriter error]);
 				return false;
 			}
+			frameNumber++;
 			[self readFromVideoFile];
 		}
 	}
