@@ -26,12 +26,21 @@
     
     [[NSFileManager defaultManager] removeItemAtPath:self.path error:nil];
     NSURL* url = [NSURL fileURLWithPath:self.path];
+	
+	int bitsPerSecond = 80000;
+	int frameRate = 25;
+	int keyFrameInterval = frameRate * 5;
     
     _writer = [AVAssetWriter assetWriterWithURL:url fileType:AVFileTypeQuickTimeMovie error:nil];
     NSDictionary* settings = [NSDictionary dictionaryWithObjectsAndKeys:
                               AVVideoCodecH264, AVVideoCodecKey,
                               [NSNumber numberWithInt: width], AVVideoWidthKey,
                               [NSNumber numberWithInt:height], AVVideoHeightKey,
+							  [NSDictionary dictionaryWithObjectsAndKeys:
+							   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
+							   [NSNumber numberWithInteger:frameRate], AVVideoMaxKeyFrameIntervalKey,
+							   [NSNumber numberWithInteger:keyFrameInterval], AVVideoMaxKeyFrameIntervalKey,
+							   nil], AVVideoCompressionPropertiesKey,
                               nil];
     _writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:settings];
     _writerInput.expectsMediaDataInRealTime = YES;

@@ -73,7 +73,7 @@ static unsigned int to_host(unsigned char* p)
 
 @synthesize bitspersecond = _bitspersecond;
 
-+ (AVEncoder*) encoderForHeight:(int) height andWidth:(int) width
++ (AVEncoder*) encoderForHeight:(int)height andWidth:(int)width
 {
     AVEncoder* enc = [AVEncoder alloc];
     [enc initForHeight:height andWidth:width];

@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreMedia/CoreMedia.h>
+#import "RTSP/RTSPServer.h"
 
 /**
  * Implement this delegate to receive notifications from the ``CVServerConnection``
@@ -43,6 +44,12 @@
 @end
 
 /**
+ * Wraps the RTSPServer
+ */
+@interface RTSPServerConnectionInput : NSObject<CVServerConnectionInput>
+@end
+
+/**
  * Connects to the running transaction on the CV server
  */
 @interface CVServerTransactionConnection : NSObject
@@ -56,6 +63,12 @@
    * Obtains the ``CVServerConnectionInput`` that expects stream of frames.
    */
 - (id<CVServerConnectionInput>)streamInput:(id<CVServerConnectionDelegate>)delegate;
+
+  /**
+   * Obtains the ``CVServerConnectionInput`` that expects stream of frames and that
+   * hosts the stream as RTSP server on the device.
+   */
+- (id<CVServerConnectionInput>)rtspServerInput:(id<CVServerConnectionDelegate>)delegate url:(out NSURL**)url;
 
 @end
 

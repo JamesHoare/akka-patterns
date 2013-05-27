@@ -25,7 +25,9 @@
 		54B38AAE1753772E00A4D17F /* MP4Atom.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AAA1753772E00A4D17F /* MP4Atom.m */; };
 		54B38AAF1753772E00A4D17F /* NALUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AAB1753772E00A4D17F /* NALUnit.cpp */; };
 		54B38AB21753774400A4D17F /* VideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AB11753774400A4D17F /* VideoEncoder.m */; };
-		54B38AB51753776900A4D17F /* H264Encoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AB41753776900A4D17F /* H264Encoder.m */; };
+		54B38AC71753CD1A00A4D17F /* RTSPClientConnection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AC21753CD1A00A4D17F /* RTSPClientConnection.mm */; };
+		54B38AC81753CD1A00A4D17F /* RTSPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AC41753CD1A00A4D17F /* RTSPMessage.m */; };
+		54B38AC91753CD1A00A4D17F /* RTSPServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AC61753CD1A00A4D17F /* RTSPServer.m */; };
 		54F8702617462320006F6C0F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702517462320006F6C0F /* UIKit.framework */; };
 		54F8702817462320006F6C0F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702717462320006F6C0F /* Foundation.framework */; };
 		54F8702A17462320006F6C0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702917462320006F6C0F /* CoreGraphics.framework */; };
@@ -79,8 +81,12 @@
 		54B38AAC1753772E00A4D17F /* NALUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NALUnit.h; sourceTree = "<group>"; };
 		54B38AB01753774400A4D17F /* VideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoEncoder.h; sourceTree = "<group>"; };
 		54B38AB11753774400A4D17F /* VideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoEncoder.m; sourceTree = "<group>"; };
-		54B38AB31753776900A4D17F /* H264Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H264Encoder.h; sourceTree = "<group>"; };
-		54B38AB41753776900A4D17F /* H264Encoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = H264Encoder.m; sourceTree = "<group>"; };
+		54B38AC11753CD1A00A4D17F /* RTSPClientConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTSPClientConnection.h; sourceTree = "<group>"; };
+		54B38AC21753CD1A00A4D17F /* RTSPClientConnection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RTSPClientConnection.mm; sourceTree = "<group>"; };
+		54B38AC31753CD1A00A4D17F /* RTSPMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTSPMessage.h; sourceTree = "<group>"; };
+		54B38AC41753CD1A00A4D17F /* RTSPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTSPMessage.m; sourceTree = "<group>"; };
+		54B38AC51753CD1A00A4D17F /* RTSPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RTSPServer.h; sourceTree = "<group>"; };
+		54B38AC61753CD1A00A4D17F /* RTSPServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTSPServer.m; sourceTree = "<group>"; };
 		54F8702217462320006F6C0F /* Streamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Streamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54F8702517462320006F6C0F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		54F8702717462320006F6C0F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -126,6 +132,7 @@
 		541E799E174CD72F00AD248A /* CV */ = {
 			isa = PBXGroup;
 			children = (
+				54B38AC01753CD1A00A4D17F /* RTSP */,
 				54B38AA61753772E00A4D17F /* H264 */,
 				541E799F174CD72F00AD248A /* AFNetworking */,
 				541E79B3174CD72F00AD248A /* BlockingQueueInputStream.h */,
@@ -169,8 +176,6 @@
 		54B38AA61753772E00A4D17F /* H264 */ = {
 			isa = PBXGroup;
 			children = (
-				54B38AB31753776900A4D17F /* H264Encoder.h */,
-				54B38AB41753776900A4D17F /* H264Encoder.m */,
 				54B38AB01753774400A4D17F /* VideoEncoder.h */,
 				54B38AB11753774400A4D17F /* VideoEncoder.m */,
 				54B38AA71753772E00A4D17F /* AVEncoder.h */,
@@ -181,6 +186,19 @@
 				54B38AAC1753772E00A4D17F /* NALUnit.h */,
 			);
 			path = H264;
+			sourceTree = "<group>";
+		};
+		54B38AC01753CD1A00A4D17F /* RTSP */ = {
+			isa = PBXGroup;
+			children = (
+				54B38AC11753CD1A00A4D17F /* RTSPClientConnection.h */,
+				54B38AC21753CD1A00A4D17F /* RTSPClientConnection.mm */,
+				54B38AC31753CD1A00A4D17F /* RTSPMessage.h */,
+				54B38AC41753CD1A00A4D17F /* RTSPMessage.m */,
+				54B38AC51753CD1A00A4D17F /* RTSPServer.h */,
+				54B38AC61753CD1A00A4D17F /* RTSPServer.m */,
+			);
+			path = RTSP;
 			sourceTree = "<group>";
 		};
 		54F8701917462320006F6C0F = {
@@ -329,7 +347,9 @@
 				54B38AAE1753772E00A4D17F /* MP4Atom.m in Sources */,
 				54B38AAF1753772E00A4D17F /* NALUnit.cpp in Sources */,
 				54B38AB21753774400A4D17F /* VideoEncoder.m in Sources */,
-				54B38AB51753776900A4D17F /* H264Encoder.m in Sources */,
+				54B38AC71753CD1A00A4D17F /* RTSPClientConnection.mm in Sources */,
+				54B38AC81753CD1A00A4D17F /* RTSPMessage.m in Sources */,
+				54B38AC91753CD1A00A4D17F /* RTSPServer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

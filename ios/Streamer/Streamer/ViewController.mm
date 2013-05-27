@@ -6,7 +6,7 @@
 @implementation ViewController {
 	CVServerConnection *serverConnection;
 	CVServerTransactionConnection *serverTransactionConnection;
-	id<CVServerConnectionInput> frameInput;
+	id<CVServerConnectionInput> serverConnectionInput;
 	
 	AVCaptureSession *captureSession;
 	AVCaptureVideoPreviewLayer *previewLayer;
@@ -20,6 +20,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 	capturing = false;
+	[self.statusLabel setText:@""];
 	NSURL *serverBaseUrl = [NSURL URLWithString:@"http://192.168.0.5:8088/recog"];
 	serverConnection = [CVServerConnection connection:serverBaseUrl];
 }
@@ -65,20 +66,28 @@
 	
 	// begin a transaction
 	serverTransactionConnection = [serverConnection begin:nil];
-	frameInput = [serverTransactionConnection streamInput:self];
+	
+	// (a) using static images
+	//serverConnectionInput = [serverTransactionConnection staticInput:self];
+	// (b) using stream
+	//serverConnectionInput = [serverTransactionConnection streamInput:self];
+	// (c) using RTSP server
+	NSURL *url;
+	serverConnectionInput = [serverTransactionConnection rtspServerInput:self url:&url];
+	[self.statusLabel setText:[url absoluteString]];
 #endif
 }
 
 - (void)stopCapture {
 #if !(TARGET_IPHONE_SIMULATOR)
 	[captureSession stopRunning];
-	[frameInput stopRunning];
+	[serverConnectionInput stopRunning];
 	
 	[previewLayer removeFromSuperlayer];
 	
 	previewLayer = nil;
 	captureSession = nil;
-	frameInput = nil;
+	serverConnectionInput = nil;
 	serverTransactionConnection = nil;
 #endif
 }
@@ -87,7 +96,7 @@
 #if !(TARGET_IPHONE_SIMULATOR)
 	frameMod++;
 	if (frameMod % FRAMES_PER_SECOND_MOD == 0) {
-		[frameInput submitFrame:sampleBuffer];
+		[serverConnectionInput submitFrame:sampleBuffer];
 	}
 #endif
 }

@@ -7,5 +7,5 @@
 - (IBAction)startStop:(id)sender;
 
 @property (nonatomic, retain) IBOutlet UIButton *startStopButton;
-
+@property (nonatomic, retain) IBOutlet UILabel *statusLabel;
 @end
