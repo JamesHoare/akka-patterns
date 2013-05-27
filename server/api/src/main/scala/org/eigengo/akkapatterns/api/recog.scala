@@ -86,6 +86,7 @@ class StreamingRecogService(coordinator: ActorRef, origin: String)(implicit exec
     // POST to /recog/rtsp/:id
     case HttpRequest(HttpMethods.POST, uri, _, entity, _) if uri startsWith "/recog/rtsp/" =>
       val sessionId = UUID.fromString(uri.substring(12))
+      println(entity.asString)
       sender ! HttpResponse(entity = "Listening to " + entity.asString)
 
     // all other requests

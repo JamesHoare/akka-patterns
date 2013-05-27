@@ -11,7 +11,7 @@
 	NSString *sessionId;
 	id<CVServerConnectionDelegate> delegate;
 }
-- (id)initWithUrl:(NSURL*)url session:(NSString*)session andDelegate:(id<CVServerConnectionDelegate>)delegate;
+- (id)initWithUrl:(NSURL*)url session:(NSString*)sessionId andDelegate:(id<CVServerConnectionDelegate>)delegate;
 - (void)initConnectionInput;
 @end
 
@@ -22,6 +22,7 @@
 @end
 
 @interface CVServerConnectionRTSPServer : AbstractCVServerConnectionInput<CVServerConnectionInput>
+- (id)initWithUrl:(NSURL *)url rtspUrl:(NSURL *)rtspUrl session:(NSString *)sessionId andDelegate:(id<CVServerConnectionDelegate>)delegate;
 @end
 
 @implementation CVServerTransactionConnection {
@@ -54,7 +55,8 @@
 - (id<CVServerConnectionInput>)rtspServerInput:(id<CVServerConnectionDelegate>)delegate url:(out NSURL**)url {
     NSString* ipaddr = [RTSPServer getIPAddress];
 	*url = [NSURL URLWithString:[NSString stringWithFormat:@"rtsp://%@/", ipaddr]];
-	return [[CVServerConnectionRTSPServer alloc] initWithUrl:*url session:sessionId andDelegate:delegate];
+	CVServerConnectionRTSPServer *conn = [[CVServerConnectionRTSPServer alloc] initWithUrl:[self inputUrl:@"rtsp"] rtspUrl:*url session:sessionId andDelegate:delegate];
+	return conn;
 }
 
 @end
@@ -189,7 +191,6 @@
 	}];
 	[operation start];
 	
-#if !(TARGET_IPHONE_SIMULATOR)
 	encoder = [AVEncoder encoderForHeight:480 andWidth:720];
 	[encoder encodeWithBlock:^int(NSArray *data, double pts) {
 		NSLog(@"%d", data.count);
@@ -201,32 +202,36 @@
 		[self transportData:params];
 		return 0;
 	}];
-#endif
 }
 
 - (void)submitFrame:(CMSampleBufferRef)frame {
-#if !(TARGET_IPHONE_SIMULATOR)
 	[encoder encodeFrame:frame];
-#endif
 }
 
 - (void)stopRunning {
 	[stream appendData:[sessionId dataUsingEncoding:NSASCIIStringEncoding]];
 	[stream close];
-#if !(TARGET_IPHONE_SIMULATOR)
-#endif
 }
 
 @end
 
 @implementation CVServerConnectionRTSPServer {
-	NSURL *url;
-	NSString *sessionId;
-	id<CVServerConnectionDelegate> delegate;
-#if !(TARGET_IPHONE_SIMULATOR)
+	NSURL* rtspUrl;
 	AVEncoder* encoder;
 	RTSPServer *server;
-#endif
+}
+
+- (id)initWithUrl:(NSURL *)aUrl rtspUrl:(NSURL *)aRtspUrl session:(NSString *)aSessionId andDelegate:(id<CVServerConnectionDelegate>)aDelegate {
+	self = [super init];
+	if (self) {
+		url = aUrl;
+		sessionId = aSessionId;
+		delegate = aDelegate;
+		rtspUrl = aRtspUrl;
+		[self initConnectionInput];
+	}
+	return self;
+
 }
 
 - (void)initConnectionInput {
@@ -243,7 +248,7 @@
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 	[request setTimeoutInterval:30.0];
 	[request setHTTPMethod:@"POST"];
-	[request setHTTPBody:[[url absoluteString] dataUsingEncoding:NSASCIIStringEncoding]];
+	[request setHTTPBody:[[rtspUrl absoluteString] dataUsingEncoding:NSASCIIStringEncoding]];
 	[request addValue:@"application/url" forHTTPHeaderField:@"Content-Type"];
 	AFHTTPRequestOperation* operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
 	[operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
