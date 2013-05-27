@@ -6,13 +6,16 @@
 	
 	AVAssetWriter* assetWriter;
 	AVAssetWriterInput *assetWriterVideoIn;
-	
-	dispatch_queue_t videoWritingQueue;
+	AVAssetWriterInputPixelBufferAdaptor *assetWriterInputAdaptor;
+
+	dispatch_semaphore_t moovSemaphore;
 	
 	bool recording;
 	
 	NSURL *videoFileUrl;
 	NSFileHandle *videoFileHandle;
+	unsigned long videoFileSize;
+	unsigned long bytesToDrop;
 }
 
 - (H264Encoder*)initWithDelegate:(id<H264EncoderDelegate>)aDelegate {
@@ -20,6 +23,7 @@
 	if (self) {
 		delegate = aDelegate;
 		recording = false;
+		moovSemaphore = dispatch_semaphore_create(0);
 		
 		self.width = 1080;
 		self.height = 720;
@@ -89,60 +93,69 @@
 	NSLog(@"Size %@", [attrs valueForKey:NSFileSize]);
 
 	NSData *data = [videoFileHandle availableData];
-/*
-	uint8_t buffer[16384];
-	unsigned int len;
-	NSMutableData *data = [[NSMutableData alloc] initWithCapacity:16384];
-	while ((len = [videoFileStream read:buffer maxLength:16384]) > 0) {
-		[data appendBytes:buffer length:len];
+	if (data.length > 0) {
+		if (bytesToDrop > 0 && data.length > bytesToDrop) {
+			NSData *realData = [data subdataWithRange:NSMakeRange(bytesToDrop, data.length - bytesToDrop)];
+			bytesToDrop = 0;
+			[delegate h264EncoderOnFrame:self completedFrameData:realData];
+		} else {
+			[delegate h264EncoderOnFrame:self completedFrameData:data];
+		}
 	}
-*/
-	if ([data length] > 0) [delegate h264EncoderOnFrame:self completedFrameData:data];
+	videoFileSize += data.length;
 }
 
 #pragma mark - Encoder usage
 
-- (CMSampleBufferRef)emptyFrame {
-	CVPixelBufferRef pixelBuffer = NULL;
-	
+- (void)encodeEmptyFrame {
 	NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
                              [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
                              [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
                              nil];
+	CVPixelBufferRef pixelBuffer = NULL;
     CVPixelBufferCreate(kCFAllocatorDefault, self.width, self.height,
-                        kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
+                        kCVPixelFormatType_32BGRA, (__bridge CFDictionaryRef) options,
                         &pixelBuffer);
-	
-	CMSampleTimingInfo sampleTime = {
-		.duration = CMTimeMake(10, 1),
-		.presentationTimeStamp = CMTimeMake(0, 1),
-		.decodeTimeStamp = CMTimeMake(0, 1),
-	};
-	
-	CMVideoFormatDescriptionRef videoInfo = NULL;
-	CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, &videoInfo);
-	
-	CMSampleBufferRef oBuf;
-	CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, NULL, NULL, videoInfo, &sampleTime, &oBuf);
-	
-	return oBuf;
+		
+	for (int i = 0; i < 10; i++) {
+		if (assetWriterInputAdaptor.assetWriterInput.readyForMoreMediaData) {
+			if (![assetWriterInputAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:CMTimeMake(i, 1)]) {
+				NSLog(@"%@", [assetWriter error]);
+			} else {
+				NSLog(@"Written.");
+			}
+		} else {
+			NSLog(@"Not ready.");
+		}
+		usleep(25000);	// 25ms
+	}
+		
+	CVPixelBufferRelease(pixelBuffer);
 }
 
 - (bool)stopVideoWriter {
 	if (!recording) return false;
 	[assetWriter finishWritingWithCompletionHandler:^() {
 		recording = false;
-		
+
+		[self readFromVideoFile];
 		if (videoFileHandle	!= nil) [videoFileHandle closeFile];
 		
 		assetWriter = nil;
 		assetWriterVideoIn = nil;
 		videoFileHandle = nil;
+		
+		dispatch_semaphore_signal(moovSemaphore);
 	}];
+	dispatch_semaphore_wait(moovSemaphore, DISPATCH_TIME_FOREVER);
+
 	return true;
 }
 
 - (bool)startVideoWriter {
+	if (recording) return false;
+	
+	recording = true;
 	if (assetWriter.status == AVAssetWriterStatusUnknown) {
         if ([assetWriter startWriting]) {
 			[assetWriter startSessionAtSourceTime:CMTimeMake(0, 1)];
@@ -157,52 +170,38 @@
 }
 
 - (bool)startEncoder {
-	videoWritingQueue = dispatch_queue_create("VideoEncodingQueue", NULL);
 	// write the header with one frame
 	if (![self initializeVideoWriter:true]) return false;
+	NSDictionary *sourcePixelBufferAttributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+														   [NSNumber numberWithInt:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey, nil];
+	assetWriterInputAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:sourcePixelBufferAttributesDictionary];
 
-//	AVAssetWriterInputPixelBufferAdaptor *pixelBufferAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:nil];
-//	CVPixelBufferRef pxbuffer = NULL;
-//	
-//	NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-//                             [NSNumber numberWithBool:YES], kCVPixelBufferCGImageCompatibilityKey,
-//                             [NSNumber numberWithBool:YES], kCVPixelBufferCGBitmapContextCompatibilityKey,
-//                             nil];
-//    CVPixelBufferCreate(kCFAllocatorDefault, self.width, self.height,
-//                        kCVPixelFormatType_32ARGB, (__bridge CFDictionaryRef) options,
-//                        &pxbuffer);
-
+	bytesToDrop = 0;
+	videoFileSize = 0;
 	[self startVideoWriter];
-	//for (int i = 0; i < 100; i++) [pixelBufferAdaptor appendPixelBuffer:pxbuffer withPresentationTime:CMTimeMake(i, 10)];
-	[self encodeSampleBuffer:[self emptyFrame]];
+	[self encodeEmptyFrame];
 	[self stopVideoWriter];
-	[self readFromVideoFile];
+	bytesToDrop = videoFileSize;
 	
-	dispatch_async(videoWritingQueue, ^{
-		if (recording) return;
-
-		if (![self initializeVideoWriter:false]) return;
-		if (![self startVideoWriter]) return;
-		recording = true;
-	});
+	if (![self initializeVideoWriter:false]) return false;
+	if (![self startVideoWriter]) return false;
+	
 	return true;
 }
 
 - (bool)stopEncoder {
-	dispatch_async(videoWritingQueue, ^{
-		[self stopVideoWriter];
-	});
+//	[self stopVideoWriter];
 	return true;
 }
 
 - (bool)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
 	if (assetWriter.status == AVAssetWriterStatusWriting) {
 		if (assetWriterVideoIn.readyForMoreMediaData) {
-			[self readFromVideoFile];
 			if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
 				NSLog(@"%@", [assetWriter error]);
 				return false;
 			}
+			[self readFromVideoFile];
 		}
 	}
 	return true;
