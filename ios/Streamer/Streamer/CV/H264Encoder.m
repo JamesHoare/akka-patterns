@@ -7,7 +7,7 @@
 	AVAssetWriter* assetWriter;
 	AVAssetWriterInput *assetWriterVideoIn;
 	AVAssetWriterInputPixelBufferAdaptor *assetWriterInputAdaptor;
-
+	unsigned long frameNumber;
 	dispatch_semaphore_t moovSemaphore;
 	
 	bool recording;
@@ -83,6 +83,10 @@
         return false;
 	}
     
+	NSDictionary *sourcePixelBufferAttributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+														   [NSNumber numberWithInt:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey, nil];
+	assetWriterInputAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:sourcePixelBufferAttributesDictionary];
+
     return true;
 }
 
@@ -117,17 +121,14 @@
                         kCVPixelFormatType_32BGRA, (__bridge CFDictionaryRef) options,
                         &pixelBuffer);
 		
-	for (int i = 0; i < 10; i++) {
-		if (assetWriterInputAdaptor.assetWriterInput.readyForMoreMediaData) {
-			if (![assetWriterInputAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:CMTimeMake(i, 1)]) {
-				NSLog(@"%@", [assetWriter error]);
-			} else {
-				NSLog(@"Written.");
-			}
+	if (assetWriterInputAdaptor.assetWriterInput.readyForMoreMediaData) {
+		if (![assetWriterInputAdaptor appendPixelBuffer:pixelBuffer withPresentationTime:CMTimeMake(++frameNumber, 1)]) {
+			NSLog(@"%@", [assetWriter error]);
 		} else {
-			NSLog(@"Not ready.");
+			NSLog(@"Written.");
 		}
-		usleep(25000);	// 25ms
+	} else {
+		NSLog(@"Not ready.");
 	}
 		
 	CVPixelBufferRelease(pixelBuffer);
@@ -172,9 +173,6 @@
 - (bool)startEncoder {
 	// write the header with one frame
 	if (![self initializeVideoWriter:true]) return false;
-	NSDictionary *sourcePixelBufferAttributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
-														   [NSNumber numberWithInt:kCVPixelFormatType_32BGRA], kCVPixelBufferPixelFormatTypeKey, nil];
-	assetWriterInputAdaptor = [[AVAssetWriterInputPixelBufferAdaptor alloc] initWithAssetWriterInput:assetWriterVideoIn sourcePixelBufferAttributes:sourcePixelBufferAttributesDictionary];
 
 	bytesToDrop = 0;
 	videoFileSize = 0;
@@ -190,11 +188,14 @@
 }
 
 - (bool)stopEncoder {
-//	[self stopVideoWriter];
+	[self stopVideoWriter];
 	return true;
 }
 
 - (bool)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+	frameNumber++;
+//	[self encodeEmptyFrame];
+//	[self readFromVideoFile];	
 	if (assetWriter.status == AVAssetWriterStatusWriting) {
 		if (assetWriterVideoIn.readyForMoreMediaData) {
 			if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
