@@ -2,7 +2,8 @@
 #import "BlockingQueueInputStream.h"
 #import "AFNetworking/AFHTTPRequestOperation.h"
 #import "AFNetworking/AFHTTPClient.h"
-#import "H264Encoder.h"
+#import "H264/H264Encoder.h"
+#import "H264/VideoEncoder.h"
 #import "ImageEncoder.h"
 
 @interface AbstractCVServerConnectionInput : NSObject {

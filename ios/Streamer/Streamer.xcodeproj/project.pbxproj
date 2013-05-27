@@ -19,9 +19,13 @@
 		541E79C1174CD72F00AD248A /* BlockingQueueInputStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79B4174CD72F00AD248A /* BlockingQueueInputStream.m */; };
 		541E79C2174CD72F00AD248A /* CVServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79B6174CD72F00AD248A /* CVServer.m */; };
 		541E79C5174CD76300AD248A /* DocumentPreflight.m in Sources */ = {isa = PBXBuildFile; fileRef = 541E79C4174CD76300AD248A /* DocumentPreflight.m */; };
-		548BAC7C175277CA006BC2D7 /* H264Encoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 548BAC7B175277CA006BC2D7 /* H264Encoder.m */; };
 		54AC06B6174EA54B0031E2F2 /* ImageEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */; };
 		54B38AA51752AE4D00A4D17F /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8704A17462702006F6C0F /* CoreImage.framework */; };
+		54B38AAD1753772E00A4D17F /* AVEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AA81753772E00A4D17F /* AVEncoder.mm */; };
+		54B38AAE1753772E00A4D17F /* MP4Atom.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AAA1753772E00A4D17F /* MP4Atom.m */; };
+		54B38AAF1753772E00A4D17F /* NALUnit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AAB1753772E00A4D17F /* NALUnit.cpp */; };
+		54B38AB21753774400A4D17F /* VideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AB11753774400A4D17F /* VideoEncoder.m */; };
+		54B38AB51753776900A4D17F /* H264Encoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 54B38AB41753776900A4D17F /* H264Encoder.m */; };
 		54F8702617462320006F6C0F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702517462320006F6C0F /* UIKit.framework */; };
 		54F8702817462320006F6C0F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702717462320006F6C0F /* Foundation.framework */; };
 		54F8702A17462320006F6C0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 54F8702917462320006F6C0F /* CoreGraphics.framework */; };
@@ -65,10 +69,18 @@
 		541E79B6174CD72F00AD248A /* CVServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CVServer.m; sourceTree = "<group>"; };
 		541E79C3174CD76300AD248A /* DocumentPreflight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DocumentPreflight.h; sourceTree = "<group>"; };
 		541E79C4174CD76300AD248A /* DocumentPreflight.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DocumentPreflight.m; sourceTree = "<group>"; };
-		548BAC7A175277CA006BC2D7 /* H264Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H264Encoder.h; sourceTree = "<group>"; };
-		548BAC7B175277CA006BC2D7 /* H264Encoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = H264Encoder.m; sourceTree = "<group>"; };
 		54AC06B4174EA54B0031E2F2 /* ImageEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageEncoder.h; sourceTree = "<group>"; };
 		54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageEncoder.m; sourceTree = "<group>"; };
+		54B38AA71753772E00A4D17F /* AVEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVEncoder.h; sourceTree = "<group>"; };
+		54B38AA81753772E00A4D17F /* AVEncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AVEncoder.mm; sourceTree = "<group>"; };
+		54B38AA91753772E00A4D17F /* MP4Atom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MP4Atom.h; sourceTree = "<group>"; };
+		54B38AAA1753772E00A4D17F /* MP4Atom.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MP4Atom.m; sourceTree = "<group>"; };
+		54B38AAB1753772E00A4D17F /* NALUnit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NALUnit.cpp; sourceTree = "<group>"; };
+		54B38AAC1753772E00A4D17F /* NALUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NALUnit.h; sourceTree = "<group>"; };
+		54B38AB01753774400A4D17F /* VideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoEncoder.h; sourceTree = "<group>"; };
+		54B38AB11753774400A4D17F /* VideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoEncoder.m; sourceTree = "<group>"; };
+		54B38AB31753776900A4D17F /* H264Encoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = H264Encoder.h; sourceTree = "<group>"; };
+		54B38AB41753776900A4D17F /* H264Encoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = H264Encoder.m; sourceTree = "<group>"; };
 		54F8702217462320006F6C0F /* Streamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Streamer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		54F8702517462320006F6C0F /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		54F8702717462320006F6C0F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -114,6 +126,7 @@
 		541E799E174CD72F00AD248A /* CV */ = {
 			isa = PBXGroup;
 			children = (
+				54B38AA61753772E00A4D17F /* H264 */,
 				541E799F174CD72F00AD248A /* AFNetworking */,
 				541E79B3174CD72F00AD248A /* BlockingQueueInputStream.h */,
 				541E79B4174CD72F00AD248A /* BlockingQueueInputStream.m */,
@@ -123,8 +136,6 @@
 				541E79C4174CD76300AD248A /* DocumentPreflight.m */,
 				54AC06B4174EA54B0031E2F2 /* ImageEncoder.h */,
 				54AC06B5174EA54B0031E2F2 /* ImageEncoder.m */,
-				548BAC7A175277CA006BC2D7 /* H264Encoder.h */,
-				548BAC7B175277CA006BC2D7 /* H264Encoder.m */,
 			);
 			path = CV;
 			sourceTree = "<group>";
@@ -153,6 +164,23 @@
 				541E79B2174CD72F00AD248A /* UIImageView+AFNetworking.m */,
 			);
 			path = AFNetworking;
+			sourceTree = "<group>";
+		};
+		54B38AA61753772E00A4D17F /* H264 */ = {
+			isa = PBXGroup;
+			children = (
+				54B38AB31753776900A4D17F /* H264Encoder.h */,
+				54B38AB41753776900A4D17F /* H264Encoder.m */,
+				54B38AB01753774400A4D17F /* VideoEncoder.h */,
+				54B38AB11753774400A4D17F /* VideoEncoder.m */,
+				54B38AA71753772E00A4D17F /* AVEncoder.h */,
+				54B38AA81753772E00A4D17F /* AVEncoder.mm */,
+				54B38AA91753772E00A4D17F /* MP4Atom.h */,
+				54B38AAA1753772E00A4D17F /* MP4Atom.m */,
+				54B38AAB1753772E00A4D17F /* NALUnit.cpp */,
+				54B38AAC1753772E00A4D17F /* NALUnit.h */,
+			);
+			path = H264;
 			sourceTree = "<group>";
 		};
 		54F8701917462320006F6C0F = {
@@ -297,7 +325,11 @@
 				541E79C2174CD72F00AD248A /* CVServer.m in Sources */,
 				541E79C5174CD76300AD248A /* DocumentPreflight.m in Sources */,
 				54AC06B6174EA54B0031E2F2 /* ImageEncoder.m in Sources */,
-				548BAC7C175277CA006BC2D7 /* H264Encoder.m in Sources */,
+				54B38AAD1753772E00A4D17F /* AVEncoder.mm in Sources */,
+				54B38AAE1753772E00A4D17F /* MP4Atom.m in Sources */,
+				54B38AAF1753772E00A4D17F /* NALUnit.cpp in Sources */,
+				54B38AB21753774400A4D17F /* VideoEncoder.m in Sources */,
+				54B38AB51753776900A4D17F /* H264Encoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
