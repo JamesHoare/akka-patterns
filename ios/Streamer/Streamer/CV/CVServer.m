@@ -10,9 +10,11 @@
 	NSURL *url;
 	NSString *sessionId;
 	id<CVServerConnectionDelegate> delegate;
+	CVServerConnectionInputStats stats;
 }
 - (id)initWithUrl:(NSURL*)url session:(NSString*)sessionId andDelegate:(id<CVServerConnectionDelegate>)delegate;
 - (void)initConnectionInput;
+- (CVServerConnectionInputStats)getStats;
 @end
 
 @interface CVServerConnectionInputStatic : AbstractCVServerConnectionInput<CVServerConnectionInput>
@@ -115,6 +117,10 @@
 	// nothing in the abstract class
 }
 
+- (CVServerConnectionInputStats)getStats {
+	return stats;
+}
+
 @end
 
 #pragma mark - Single image posts
@@ -146,6 +152,9 @@
 		}];
 		[operation start];
 		[operation waitUntilFinished];
+		
+		stats.requestCount++;
+		stats.networkBytes += [data length];
 	}];
 }
 
@@ -174,6 +183,10 @@
 }
 
 - (void)initConnectionInput {
+	stats.networkBytes = 0;
+	stats.requestCount = 1;
+	stats.networkTime = 0;
+	
 	stream = [[BlockingQueueInputStream alloc] init];
 
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -193,6 +206,7 @@
 	[encoder encodeWithBlock:^int(NSArray *data, double pts) {
 		NSLog(@"%d", data.count);
 		for (NSData* e in data) {
+			stats.networkBytes += e.length;
 			[self transportData:e];
 		}
 		return 0;
@@ -221,6 +235,9 @@
 
 - (id)initWithUrl:(NSURL *)aUrl rtspUrl:(NSURL *)aRtspUrl session:(NSString *)aSessionId andDelegate:(id<CVServerConnectionDelegate>)aDelegate {
 	self = [super init];
+	stats.networkBytes = 0;
+	stats.networkTime = 0;
+	stats.requestCount = 0;
 	if (self) {
 		url = aUrl;
 		sessionId = aSessionId;
@@ -236,9 +253,15 @@
 	encoder = [AVEncoder encoderForHeight:480 andWidth:720];
 	[encoder encodeWithBlock:^int(NSArray *data, double pts) {
 		server.bitrate = encoder.bitspersecond;
-		[server onVideoData:data time:pts];
+		if ([server connectionCount] > 0) {
+			for (NSData* e in data) {
+				stats.networkBytes += e.length;
+			}
+			[server onVideoData:data time:pts];
+		}
 		return 0;
 	} onParams:^int(NSData *params) {
+		stats.requestCount++;
 		server = [RTSPServer setupListener:params];
 		return 0;
 	}];

@@ -14,13 +14,14 @@
 @interface RTSPServer : NSObject
 
 
-+ (NSString*) getIPAddress;
-+ (RTSPServer*) setupListener:(NSData*) configData;
++ (NSString*)getIPAddress;
++ (RTSPServer*)setupListener:(NSData*)configData;
 
-- (NSData*) getConfigData;
-- (void) onVideoData:(NSArray*) data time:(double) pts;
-- (void) shutdownConnection:(id) conn;
-- (void) shutdownServer;
+- (NSData*)getConfigData;
+- (void)onVideoData:(NSArray*)data time:(double)pts;
+- (void)shutdownConnection:(id)conn;
+- (void)shutdownServer;
+- (int)connectionCount;
 
 @property (readwrite, atomic) int bitrate;
 

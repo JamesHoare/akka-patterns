@@ -97,6 +97,7 @@
 	frameMod++;
 	if (frameMod % FRAMES_PER_SECOND_MOD == 0) {
 		[serverConnectionInput submitFrame:sampleBuffer];
+		NSLog(@"Network bytes %ld", [serverConnectionInput getStats].networkBytes);
 	}
 #endif
 }

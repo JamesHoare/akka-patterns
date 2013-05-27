@@ -103,6 +103,10 @@ static void onSocket (
     return _configData;
 }
 
+- (int)connectionCount {
+	return _connections.count;
+}
+
 - (void) onAccept:(CFSocketNativeHandle) childHandle
 {
     RTSPClientConnection* conn = [RTSPClientConnection createWithSocket:childHandle server:self];

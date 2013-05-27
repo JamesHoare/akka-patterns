@@ -30,6 +30,15 @@
 @end
 
 /**
+ * Statistics about the ``CVServerConnectionInput``
+ */
+typedef struct {
+	unsigned long networkTime;
+	unsigned long networkBytes;
+	unsigned int  requestCount;
+} CVServerConnectionInputStats;
+
+/**
  * Submits the frames to the server
  */
 @protocol CVServerConnectionInput
@@ -41,12 +50,11 @@
    * Complete the stream of frames
    */
 - (void)stopRunning;
-@end
 
-/**
- * Wraps the RTSPServer
- */
-@interface RTSPServerConnectionInput : NSObject<CVServerConnectionInput>
+  /**
+   * Returns the current 'stats' about the connection
+   */
+- (CVServerConnectionInputStats)getStats;
 @end
 
 /**
