@@ -163,9 +163,7 @@
 @implementation CVServerConnectionInputStream {
 	BlockingQueueInputStream *stream;
 	bool encoding;
-#if !(TARGET_IPHONE_SIMULATOR)
 	AVEncoder* encoder;
-#endif
 }
 
 - (void)transportData:(NSData*)frame {
