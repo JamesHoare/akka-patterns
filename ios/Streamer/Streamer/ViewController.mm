@@ -21,7 +21,7 @@
     [super viewDidLoad];
 	capturing = false;
 	[self.statusLabel setText:@""];
-	NSURL *serverBaseUrl = [NSURL URLWithString:@"http://192.168.0.5:8088/recog"];
+	NSURL *serverBaseUrl = [NSURL URLWithString:@"http://192.168.102.37:8088/recog"];
 	serverConnection = [CVServerConnection connection:serverBaseUrl];
 }
 
@@ -69,8 +69,10 @@
 	
 	// (a) using static images
 	//serverConnectionInput = [serverTransactionConnection staticInput:self];
+	
 	// (b) using stream
 	//serverConnectionInput = [serverTransactionConnection streamInput:self];
+	
 	// (c) using RTSP server
 	NSURL *url;
 	serverConnectionInput = [serverTransactionConnection rtspServerInput:self url:&url];

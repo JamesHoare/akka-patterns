@@ -15,3 +15,6 @@ addSbtPlugin("reaktor" % "sbt-scct" % "0.2-SNAPSHOT") // https://github.com/mtko
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.2.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.7.0")
+
+addSbtPlugin("name.heikoseeberger" % "sbt-groll" % "1.5.0")
+
